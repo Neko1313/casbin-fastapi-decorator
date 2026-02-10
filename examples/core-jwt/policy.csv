@@ -1,0 +1,6 @@
+p, admin, articles, read
+p, admin, articles, write
+p, viewer, articles, read
+
+g, alice, admin
+g, bob, viewer

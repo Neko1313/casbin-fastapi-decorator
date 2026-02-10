@@ -1,0 +1,5 @@
+[environment]
+root = ["./src", "./", "./packages"]
+
+[src]
+include = ["src", "tests", "packages"]
