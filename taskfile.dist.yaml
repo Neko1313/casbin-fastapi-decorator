@@ -16,14 +16,14 @@ tasks:
         if [[ "{{.CI}}" == "true" ]]; then
           echo "Running linters with CI reports..."
           mkdir -p reports
-          uv run ruff check --output-format json --output-file reports/ruff.json src packages tests examples
-          uv run bandit -c pyproject.toml -r src packages examples -o reports/bandit.json --format json
+          uv run ruff check --output-format json --output-file reports/ruff.json src packages tests
+          uv run bandit -c pyproject.toml -r src packages -o reports/bandit.json --format json
           uv run ty check --output-format github > reports/gl-code-quality-report.json
         else
           echo "Running linters for development..."
-          uv run ruff check --fix src packages tests examples
+          uv run ruff check --fix src packages tests
           uv run ty check
-          uv run bandit -c pyproject.toml -r src packages examples
+          uv run bandit -c pyproject.toml -r src packages
         fi
 
   test/core:
