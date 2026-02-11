@@ -1,30 +1,26 @@
-from __future__ import annotations
-
+from collections.abc import Callable
 from functools import wraps
 from inspect import isawaitable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from fastapi import Depends
 from fastapi_decorators import depends
 
 from casbin_fastapi_decorator._types import AccessSubject
 
-if TYPE_CHECKING:
-    from collections.abc import Callable
 
-
-def build_auth_decorator(user_provider: Callable[..., Any]) -> Callable:
+def build_auth_decorator(user_provider: "Callable[..., Any]") -> Callable:
     """Build an authentication-only decorator."""
     return depends(Depends(user_provider))
 
 
 def build_permission_decorator(
     *,
-    user_provider: Callable[..., Any],
-    enforcer_provider: Callable[..., Any],
-    error_factory: Callable[..., Exception],
+    user_provider: "Callable[..., Any]",
+    enforcer_provider: "Callable[..., Any]",
+    error_factory: "Callable[..., Exception]",
     args: tuple[AccessSubject | Any, ...],
-) -> Callable:
+) -> "Callable":
     """
     Build a permission-check decorator via casbin enforcer.
 
@@ -40,7 +36,7 @@ def build_permission_decorator(
         if isinstance(arg, AccessSubject):
             depends_kwargs[f"__fguard_{i}__"] = Depends(arg.val)
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: "Callable") -> "Callable":
         @depends(**depends_kwargs)
         @wraps(func)
         async def wrapper(*fn_args: Any, **kw: Any) -> Any:

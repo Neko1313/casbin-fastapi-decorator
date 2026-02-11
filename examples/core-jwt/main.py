@@ -52,7 +52,7 @@ app = FastAPI(title="Core + JWT Example")
 
 @app.post("/token")
 async def login(username: str) -> dict:
-    """Generate a JWT token for the given username."""
+    """Generate a JWT token for the given role."""
     token = jwt.encode(
         {"sub": username}, SECRET_KEY, algorithm=ALGORITHM
     )

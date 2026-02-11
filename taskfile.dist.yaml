@@ -5,7 +5,7 @@ tasks:
     desc: Install dependencies
     cmds:
       - uv sync --all-groups
-      - uv pip install '.[jwt,db]'
+      - uv pip install -e '.[jwt,db]'
     aliases:
       - backend/install-deps
 

@@ -1,0 +1,5 @@
+p, admin,post, read
+p, admin,post, write
+p, editor,post, read
+p, editor,post, write
+p, viewer,post, read
