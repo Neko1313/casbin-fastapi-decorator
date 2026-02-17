@@ -29,6 +29,8 @@ build-backend = "uv_build"
 members = [
     "packages/*",
     "examples/core",
+    "examples/core-jwt",
+    "examples/core-db",
 ]
 
 [tool.uv.sources]

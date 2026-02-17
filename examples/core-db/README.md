@@ -4,56 +4,68 @@ Example using `casbin-fastapi-decorator` with `DatabaseEnforcerProvider` to load
 
 ## What it demonstrates
 
-- `DatabaseEnforcerProvider` loads policies from a database table on each request
-- `default_policies` are merged with DB policies (e.g. a built-in superadmin rule)
-- Policies can be managed at runtime via the database
-- **model.conf** is still a file — only policies come from the DB
+- `DatabaseEnforcerProvider` loads policies from a DB table on each request
+- Policies are seeded on startup and can be managed at runtime via the database
+- Same auth as core example (Bearer token = role) — only the enforcer changes
+
+## Casbin setup
+
+- **casbin/model.conf** — basic model, matcher: `r.sub.role == p.sub`
+- Policies come from SQLite DB (seeded on startup), not a CSV file
 
 ## Database setup
 
-Uses SQLite (`aiosqlite`) for simplicity. On startup the app creates the `policies` table and seeds it with sample data:
+Uses SQLite (`aiosqlite`) for simplicity. On startup the app creates the `policies` table and seeds it:
 
-| sub     | obj      | act    |
-|---------|----------|--------|
-| admin   | articles | read   |
-| admin   | articles | write  |
-| admin   | articles | delete |
-| editor  | articles | read   |
-| editor  | articles | write  |
-| viewer  | articles | read   |
+| sub    | obj  | act    |
+|--------|------|--------|
+| admin  | post | read   |
+| admin  | post | write  |
+| admin  | post | delete |
+| editor | post | read   |
+| editor | post | write  |
+| viewer | post | read   |
+
+> In production replace `sqlite+aiosqlite` with `asyncpg` (PostgreSQL) or another async driver.
 
 ## Run
 
 ```bash
-pip install "casbin-fastapi-decorator[db]" aiosqlite uvicorn
-uvicorn examples.core-db.main:app --reload
+uv run fastapi dev src/main.py
 ```
-
-> `aiosqlite` is needed for the SQLite async driver. In production you would use `asyncpg` (PostgreSQL) or another async driver.
 
 ## Endpoints
 
-| Method | Path                      | Permission         | Description                 |
-|--------|---------------------------|--------------------|-----------------------------|
-| GET    | `/me`                     | auth only          | Requires authentication     |
-| GET    | `/articles`               | `articles:read`    | List articles               |
-| POST   | `/articles`               | `articles:write`   | Create an article           |
-| DELETE  | `/articles/{article_id}` | `articles:delete`  | Delete (admin only)         |
-| GET    | `/policies`               | public             | View all policies from DB   |
+| Method | Path                | Permission     | Description                  |
+|--------|---------------------|----------------|------------------------------|
+| POST   | `/login`            | public         | Returns role as token        |
+| GET    | `/me`               | auth only      | Returns current user         |
+| GET    | `/articles`         | `post:read`    | List all posts               |
+| POST   | `/articles`         | `post:write`   | Create a post                |
+| DELETE | `/articles/{id}`    | `post:delete`  | Delete a post (admin only)   |
+| GET    | `/policies`         | public         | View all policies from DB    |
 
 ## Try it
 
 ```bash
-# Check current policies
+# View current policies from DB
 curl http://localhost:8000/policies
 
-# Authenticated endpoint (default user: alice/admin)
-curl http://localhost:8000/me
+# Get a token
+TOKEN=$(curl -s -X POST "http://localhost:8000/login?role=admin" | jq -r '.')
+
+# Authentication check
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/me
 
 # Permission checks
-curl http://localhost:8000/articles
-curl -X POST http://localhost:8000/articles
-curl -X DELETE http://localhost:8000/articles/1
-```
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/articles
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New post"}' \
+  http://localhost:8000/articles
+curl -X DELETE -H "Authorization: Bearer $TOKEN" http://localhost:8000/articles/1
 
-By default the app authenticates as `alice` (admin). Edit `get_current_user()` in `main.py` to switch users. For example, change to `charlie` (viewer) and the write/delete endpoints will return 403.
+# Try editor — write allowed, delete denied
+TOKEN_ED=$(curl -s -X POST "http://localhost:8000/login?role=editor" | jq -r '.')
+curl -X DELETE -H "Authorization: Bearer $TOKEN_ED" http://localhost:8000/articles/1  # 403
+```
