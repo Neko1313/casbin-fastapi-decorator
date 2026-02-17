@@ -1,0 +1,16 @@
+[project]
+name = "core-jwt"
+version = "0.1.0"
+description = "Casbin Fastapi Decorator JWT Example"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi[standard]>=0.128.6",
+    "casbin-fastapi-decorator",
+    "casbin-fastapi-decorator-jwt",
+    "pyjwt>=2.0.0",
+]
+
+[tool.uv.sources]
+casbin-fastapi-decorator = { workspace = true }
+casbin-fastapi-decorator-jwt = { workspace = true }

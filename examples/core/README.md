@@ -4,42 +4,53 @@ Minimal example using only `casbin-fastapi-decorator` with file-based Casbin pol
 
 ## What it demonstrates
 
-- `auth_required()` — authentication-only decorator
-- `require_permission("resource", "action")` — static permission check
-- `require_permission(AccessSubject(...), "action")` — dynamic permission check where the value is resolved from the request via FastAPI DI
+- Bearer token = role (simplest auth for demo, no JWT)
+- `auth_required()` — authentication-only guard
+- `require_permission(Resource, Permission)` — static permission check with enums
 
 ## Casbin setup
 
-- **model.conf** — RBAC model with role inheritance (`g = _, _`)
-- **policy.csv** — policies and role assignments (alice=admin, bob=editor, charlie=viewer)
+- **casbin/model.conf** — basic model, matcher: `r.sub.role == p.sub`
+- **casbin/policy.csv** — policies for `admin`, `editor`, `viewer` roles on `post` resource
 
 ## Run
 
 ```bash
-pip install casbin-fastapi-decorator uvicorn
-uvicorn examples.core.main:app --reload
+uv run fastapi dev src/main.py
 ```
 
 ## Endpoints
 
-| Method | Path                    | Permission        | Description                            |
-|--------|-------------------------|-------------------|----------------------------------------|
-| GET    | `/me`                   | auth only         | Returns current user                   |
-| GET    | `/articles`             | `articles:read`   | List all articles                      |
-| POST   | `/articles`             | `articles:write`  | Create an article                      |
-| GET    | `/articles/{article_id}`| dynamic           | Read article (owner resolved from DI)  |
+| Method | Path        | Permission   | Description           |
+|--------|-------------|--------------|-----------------------|
+| POST   | `/login`    | public       | Returns role as token |
+| GET    | `/me`       | auth only    | Returns current user  |
+| GET    | `/articles` | `post:read`  | List all posts        |
+| POST   | `/articles` | `post:write` | Create a post         |
 
 ## Try it
 
 ```bash
-# Authenticated endpoint
-curl http://localhost:8000/me
+# Get a token (role is used directly as Bearer credential)
+TOKEN=$(curl -s -X POST "http://localhost:8000/login?role=admin" | jq -r '.')
 
-# Static permission
-curl http://localhost:8000/articles
+# Authentication check
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/me
 
-# Dynamic permission (article owner is resolved and checked)
-curl http://localhost:8000/articles/1
+# Permission check — allowed (admin has post:read)
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/articles
+
+# Permission check — allowed (admin has post:write)
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New post"}' \
+  http://localhost:8000/articles
+
+# Try viewer — read allowed, write denied
+TOKEN_VIEW=$(curl -s -X POST "http://localhost:8000/login?role=viewer" | jq -r '.')
+curl -H "Authorization: Bearer $TOKEN_VIEW" http://localhost:8000/articles          # 200
+curl -X POST -H "Authorization: Bearer $TOKEN_VIEW" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New post"}' \
+  http://localhost:8000/articles  # 403
 ```
-
-By default the app authenticates as `alice` (admin). Edit `get_current_user()` in `main.py` to switch users and test different permission levels.

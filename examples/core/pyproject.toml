@@ -1,0 +1,13 @@
+[project]
+name = "core"
+version = "0.1.0"
+description = "Casbin Fastapi Decorator Core Example"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi[standard]>=0.128.6",
+    "casbin-fastapi-decorator",
+]
+
+[tool.uv.sources]
+casbin-fastapi-decorator = { workspace = true }

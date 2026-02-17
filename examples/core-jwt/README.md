@@ -1,55 +1,57 @@
 # Core + JWT Example
 
-Example using `casbin-fastapi-decorator` with `JWTUserProvider` for Bearer token authentication and file-based Casbin policies.
+Example using `casbin-fastapi-decorator` with `JWTUserProvider` for JWT Bearer authentication and file-based Casbin policies.
 
 ## What it demonstrates
 
-- `JWTUserProvider` extracts and validates JWT from the `Authorization: Bearer <token>` header
-- `auth_required()` — rejects requests without a valid JWT
-- `require_permission()` — checks permissions using the `sub` claim from the token
+- `JWTUserProvider` decodes a JWT and maps claims to `UserSchema` via `user_model`
+- JWT payload carries `role` directly — same matcher as the core example: `r.sub.role == p.sub`
+- `auth_required()` — rejects requests with missing or invalid tokens
+- `require_permission(Resource, Permission)` — checks permissions using the role from the token
 
 ## Casbin setup
 
-- **model.conf** — RBAC model with role inheritance
-- **policy.csv** — `alice` has admin role (read + write), `bob` has viewer role (read only)
+- **casbin/model.conf** — basic model, matcher: `r.sub.role == p.sub`
+- **casbin/policy.csv** — policies for `admin`, `editor`, `viewer` roles on `post` resource
 
 ## Run
 
 ```bash
-pip install "casbin-fastapi-decorator[jwt]" uvicorn
-uvicorn examples.core-jwt.main:app --reload
+uv run fastapi dev src/main.py
 ```
 
 ## Endpoints
 
-| Method | Path        | Permission       | Description                  |
-|--------|-------------|------------------|------------------------------|
-| POST   | `/token`    | public           | Generate a JWT for a user    |
-| GET    | `/me`       | auth only        | Requires valid JWT           |
-| GET    | `/articles` | `articles:read`  | List articles                |
-| POST   | `/articles` | `articles:write` | Create an article            |
+| Method | Path        | Permission   | Description                    |
+|--------|-------------|--------------|--------------------------------|
+| POST   | `/login`    | public       | Generate a JWT for a given role |
+| GET    | `/me`       | auth only    | Returns current user            |
+| GET    | `/articles` | `post:read`  | List all posts                  |
+| POST   | `/articles` | `post:write` | Create a post                   |
 
 ## Try it
 
 ```bash
-# Get a token for alice (admin)
-TOKEN=$(curl -s -X POST "http://localhost:8000/token?username=alice" | jq -r .access_token)
+# Get a JWT token for admin
+TOKEN=$(curl -s -X POST "http://localhost:8000/login?role=admin" | jq -r '.')
 
-# Authenticated endpoint
+# Authentication check
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/me
 
-# Permission check — allowed (admin has articles:read)
+# Permission check — allowed (admin has post:read)
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/articles
 
-# Permission check — allowed (admin has articles:write)
-curl -X POST -H "Authorization: Bearer $TOKEN" http://localhost:8000/articles
+# Permission check — allowed (admin has post:write)
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New post"}' \
+  http://localhost:8000/articles
 
-# Now try with bob (viewer — read only)
-TOKEN_BOB=$(curl -s -X POST "http://localhost:8000/token?username=bob" | jq -r .access_token)
-
-# Allowed (viewer has articles:read)
-curl -H "Authorization: Bearer $TOKEN_BOB" http://localhost:8000/articles
-
-# Denied — 403 (viewer has no articles:write)
-curl -X POST -H "Authorization: Bearer $TOKEN_BOB" http://localhost:8000/articles
+# Try viewer — read allowed, write denied
+TOKEN_VIEW=$(curl -s -X POST "http://localhost:8000/login?role=viewer" | jq -r '.')
+curl -H "Authorization: Bearer $TOKEN_VIEW" http://localhost:8000/articles          # 200
+curl -X POST -H "Authorization: Bearer $TOKEN_VIEW" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New post"}' \
+  http://localhost:8000/articles  # 403
 ```

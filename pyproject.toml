@@ -26,7 +26,12 @@ requires = ["uv_build>=0.9.18,<0.10.0"]
 build-backend = "uv_build"
 
 [tool.uv.workspace]
-members = ["packages/*"]
+members = [
+    "packages/*",
+    "examples/core",
+    "examples/core-jwt",
+    "examples/core-db",
+]
 
 [tool.uv.sources]
 casbin-fastapi-decorator-jwt = { workspace = true }
