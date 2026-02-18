@@ -3,6 +3,7 @@ name = "casbin-fastapi-decorator"
 version = "0.1.0"
 description = "Casbin authorization decorator factory for FastAPI"
 readme = "README.md"
+license = { file = "LICENSE" }
 authors = [
     { name = "Neko1313", email = "nikita.ribalchencko@yandex.ru" }
 ]

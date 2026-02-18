@@ -20,6 +20,7 @@ pip install "casbin-fastapi-decorator[db]"    # Policies from DB (SQLAlchemy)
 ## Quick start
 
 ```python
+import casbin
 from fastapi import FastAPI, HTTPException
 from casbin_fastapi_decorator import AccessSubject, PermissionGuard
 
@@ -125,14 +126,33 @@ enforcer_provider = DatabaseEnforcerProvider(
 
 Loads policies from a SQLAlchemy async session and creates a `casbin.Enforcer` per request. `default_policies` are added on top of the DB policies.
 
+## Examples
+
+| Example | Description |
+|---|---|
+| [`examples/core`](examples/core) | Bearer token auth, file-based Casbin policies |
+| [`examples/core-jwt`](examples/core-jwt) | JWT auth via `JWTUserProvider`, file-based policies |
+| [`examples/core-db`](examples/core-db) | Bearer token auth, policies from SQLite via `DatabaseEnforcerProvider` |
+
 ## Development
 
 Requires Python 3.10+, [uv](https://docs.astral.sh/uv/), [task](https://taskfile.dev/).
 
 ```bash
-uv sync --all-groups   # install dependencies
-task lint              # ruff + ty + bandit
-task tests             # all tests
+task install           # uv sync --all-groups + install extras (jwt, db)
+task lint              # ruff + ty + bandit for all packages
+task tests             # all tests (core + jwt + db)
+```
+
+Individual package tasks:
+
+```bash
+task core:lint         # lint core only
+task core:test         # test core only
+task jwt:lint          # lint JWT package
+task jwt:test          # test JWT package
+task db:lint           # lint DB package
+task db:test           # test DB package (requires Docker for testcontainers)
 ```
 
 ## License
