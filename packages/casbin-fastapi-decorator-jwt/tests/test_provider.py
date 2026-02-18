@@ -1,11 +1,13 @@
+"""Basic integration tests for JWTUserProvider."""
 from __future__ import annotations
 
 import jwt
 import pytest
-from casbin_fastapi_decorator_jwt import JWTUserProvider
 from fastapi import Depends, FastAPI
 from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel
+
+from casbin_fastapi_decorator_jwt import JWTUserProvider
 
 SECRET = "test-secret-key"
 ALGORITHM = "HS256"

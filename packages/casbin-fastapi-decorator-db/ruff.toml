@@ -1,0 +1,54 @@
+line-length = 79
+target-version = "py310"
+fix = true
+unsafe-fixes = true
+
+[lint]
+ignore = [
+    "D203",
+    "D212",
+    "S101",
+    "RUF002",
+    "ANN401",
+    "RUF001",
+    "RUF003",
+    "S603",
+    "RUF012"
+]
+select = [
+    "A",
+    "B",
+    "F",
+    "I",
+    "Q",
+    "ASYNC",
+    "N",
+    "W",
+    "UP",
+    "T20",
+    "SIM",
+    "ANN",
+    "PL",
+    "PT",
+    "RET",
+    "E",
+    "S",
+    "C4",
+    "EM",
+    "DTZ",
+    "RUF",
+    "TCH",
+    "ARG",
+    "DOC",
+    "D"
+]
+
+[lint.per-file-ignores]
+"tests/**" = [
+    "ANN", "D", "PLR2004", "ARG001", "E501",
+    "S105", "B008",
+]
+"**/tests/**" = [
+    "ANN", "D", "PLR2004", "ARG001", "E501",
+    "S105", "B008",
+]

@@ -1,0 +1,36 @@
+version: "3"
+
+tasks:
+  lint:
+    desc: Run linters for DB package (use CI=true for reports)
+    cmds:
+      - |
+        if [[ "{{.CI}}" == "true" ]]; then
+          echo "Running DB linters with CI reports..."
+          mkdir -p reports
+          uv run ruff check --output-format json --output-file reports/ruff.json src tests
+          uv run bandit -c pyproject.toml -r src -o reports/bandit.json --format json
+          uv run ty check --output-format github > reports/gl-code-quality-report.json
+        else
+          echo "Running DB linters for development..."
+          uv run ruff check --fix src tests
+          uv run bandit -c pyproject.toml -r src
+          uv run ty check
+        fi
+
+  test:
+    desc: Run DB package tests (use CI=true for reports)
+    cmds:
+      - |
+        if [[ "{{.CI}}" == "true" ]]; then
+          echo "Running DB tests with CI reports..."
+          mkdir -p reports
+          uv run pytest tests \
+            --junitxml=reports/junit.xml \
+            --cov=src \
+            --cov-report=xml:reports/coverage.xml \
+            --cov-report=term-missing
+        else
+          echo "Running DB tests for development..."
+          uv run pytest tests --cov=src --cov-report=term-missing:skip-covered
+        fi

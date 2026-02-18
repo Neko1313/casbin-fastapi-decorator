@@ -38,6 +38,9 @@ casbin-fastapi-decorator-jwt = { workspace = true }
 casbin-fastapi-decorator-db = { workspace = true }
 
 
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+
 [tool.bandit]
 exclude_dirs = ["tests"]
 
