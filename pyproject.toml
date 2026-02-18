@@ -39,7 +39,14 @@ casbin-fastapi-decorator-db = { workspace = true }
 
 
 [tool.pytest.ini_options]
-asyncio_mode = "strict"
+asyncio_mode = "auto"
+python_files = ["test_*.py", "*_test.py", "act.py", "error.py"]
+markers = [
+    "integration: integration tests (real I/O, HTTP)",
+    "unit: unit tests (no real I/O)",
+    "permission_guard: PermissionGuard component tests",
+    "access_subject: AccessSubject component tests",
+]
 
 [tool.bandit]
 exclude_dirs = ["tests"]
@@ -51,8 +58,6 @@ lint = [
     "ty>=0.0.15",
 ]
 test = [
-    "casbin-fastapi-decorator-jwt",
-    "casbin-fastapi-decorator-db",
     "pytest>=9.0.2",
     "pytest-asyncio>=1.3.0",
     "pytest-cov>=7.0.0",

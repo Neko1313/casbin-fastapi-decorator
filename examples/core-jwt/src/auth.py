@@ -1,6 +1,5 @@
 """Auth via JWT."""
 from casbin_fastapi_decorator_jwt import JWTUserProvider
-
 from model import UserSchema
 
 SECRET_KEY = "super-secret-key"  # noqa: S105

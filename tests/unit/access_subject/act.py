@@ -1,4 +1,4 @@
-"""Unit tests for AccessSubject dataclass."""
+"""Unit tests — AccessSubject happy paths."""
 from __future__ import annotations
 
 import pytest
@@ -10,6 +10,8 @@ async def _dep() -> dict:
     return {"key": "value"}
 
 
+@pytest.mark.unit
+@pytest.mark.access_subject
 def test_default_selector_is_identity() -> None:
     subject = AccessSubject(val=_dep)
     assert subject.selector("anything") == "anything"
@@ -17,23 +19,15 @@ def test_default_selector_is_identity() -> None:
     assert subject.selector(42) == 42
 
 
+@pytest.mark.unit
+@pytest.mark.access_subject
 def test_custom_selector_transforms_value() -> None:
     subject = AccessSubject(val=_dep, selector=lambda x: x["key"])
     assert subject.selector({"key": "extracted"}) == "extracted"
 
 
-def test_frozen_dataclass_raises_on_reassign() -> None:
-    subject = AccessSubject(val=_dep)
-    with pytest.raises(AttributeError):
-        subject.val = None  # type: ignore[misc]
-
-
-def test_frozen_selector_raises_on_reassign() -> None:
-    subject = AccessSubject(val=_dep)
-    with pytest.raises(AttributeError):
-        subject.selector = lambda x: x  # type: ignore[misc]
-
-
+@pytest.mark.unit
+@pytest.mark.access_subject
 def test_equality_same_val_and_selector() -> None:
     selector = lambda x: x  # noqa: E731
     s1 = AccessSubject(val=_dep, selector=selector)
@@ -41,6 +35,8 @@ def test_equality_same_val_and_selector() -> None:
     assert s1 == s2
 
 
+@pytest.mark.unit
+@pytest.mark.access_subject
 def test_inequality_different_val() -> None:
     async def other_dep() -> dict:
         return {}
@@ -50,6 +46,8 @@ def test_inequality_different_val() -> None:
     assert s1 != s2
 
 
+@pytest.mark.unit
+@pytest.mark.access_subject
 def test_inequality_different_selector() -> None:
     sel1 = lambda x: x  # noqa: E731
     sel2 = str
@@ -58,19 +56,15 @@ def test_inequality_different_selector() -> None:
     assert s1 != s2
 
 
-def test_slots_no_arbitrary_attributes() -> None:
-    # frozen+slots dataclass must reject arbitrary attributes;
-    # Python 3.13 raises TypeError here instead of AttributeError
-    subject = AccessSubject(val=_dep)
-    with pytest.raises((AttributeError, TypeError)):
-        subject.nonexistent = "value"  # type: ignore[attr-defined]
-
-
+@pytest.mark.unit
+@pytest.mark.access_subject
 def test_val_attribute_accessible() -> None:
     subject = AccessSubject(val=_dep)
     assert subject.val is _dep
 
 
+@pytest.mark.unit
+@pytest.mark.access_subject
 def test_selector_attribute_accessible() -> None:
     sel = lambda x: x["name"]  # noqa: E731
     subject = AccessSubject(val=_dep, selector=sel)

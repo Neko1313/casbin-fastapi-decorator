@@ -1,13 +1,4 @@
-"""
-Functional tests for DatabaseEnforcerProvider.__call__:
-  - returns casbin.Enforcer
-  - select() called with policy_model
-  - policy_mapper applied to every row
-  - default + DB policies combined
-  - session context manager exercised
-  - multiple calls create independent enforcers
-  - custom mapper shape
-"""
+"""Unit tests — DatabaseEnforcerProvider.__call__ behaviour (mocked session, no real DB)."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -20,10 +11,6 @@ from casbin_fastapi_decorator_db import DatabaseEnforcerProvider
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-# ---------------------------------------------------------------------------
-# Shared RBAC model fixture
-# ---------------------------------------------------------------------------
 
 _RBAC_MODEL = """\
 [request_definition]
@@ -71,10 +58,6 @@ def acl_model_path(tmp_path: Path) -> Path:
     return path
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 class PolicyRow:
     def __init__(self, sub: str, obj: str, act: str) -> None:
         self.sub = sub
@@ -99,11 +82,8 @@ def _make_session(rows: list[Any]) -> MagicMock:
     return factory
 
 
-# ---------------------------------------------------------------------------
-# Return type
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
 async def test_returns_casbin_enforcer(mock_select: MagicMock, model_path: Path) -> None:
     provider = DatabaseEnforcerProvider(
@@ -116,11 +96,8 @@ async def test_returns_casbin_enforcer(mock_select: MagicMock, model_path: Path)
     assert isinstance(enforcer, casbin.Enforcer)
 
 
-# ---------------------------------------------------------------------------
-# select() call
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
 async def test_select_called_with_policy_model(mock_select: MagicMock, model_path: Path) -> None:
     provider = DatabaseEnforcerProvider(
@@ -133,11 +110,8 @@ async def test_select_called_with_policy_model(mock_select: MagicMock, model_pat
     mock_select.assert_called_once_with(PolicyRow)
 
 
-# ---------------------------------------------------------------------------
-# Policy mapper
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
 async def test_mapper_applied_to_every_row(mock_select: MagicMock, model_path: Path) -> None:
     rows = [
@@ -156,14 +130,13 @@ async def test_mapper_applied_to_every_row(mock_select: MagicMock, model_path: P
     assert enforcer.enforce("alice", "docs", "read") is True
     assert enforcer.enforce("bob", "docs", "write") is True
     assert enforcer.enforce("carol", "reports", "read") is True
-    assert enforcer.enforce("alice", "docs", "write") is False  # not granted
+    assert enforcer.enforce("alice", "docs", "write") is False
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
 async def test_custom_mapper_field_names(mock_select: MagicMock, acl_model_path: Path) -> None:
-    """Mapper can use any attribute names from the ORM row."""
-
     class PermRow:
         def __init__(self, user: str, resource: str, action: str) -> None:
             self.user = user
@@ -183,11 +156,8 @@ async def test_custom_mapper_field_names(mock_select: MagicMock, acl_model_path:
     assert enforcer.enforce("dave", "invoices", "read") is False
 
 
-# ---------------------------------------------------------------------------
-# Default + DB policies combined
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
 async def test_default_and_db_policies_both_enforced(mock_select: MagicMock, model_path: Path) -> None:
     rows = [PolicyRow("bob", "data2", "write")]
@@ -202,10 +172,11 @@ async def test_default_and_db_policies_both_enforced(mock_select: MagicMock, mod
 
     assert enforcer.enforce("alice", "data1", "read") is True   # default
     assert enforcer.enforce("bob", "data2", "write") is True    # from DB
-    assert enforcer.enforce("alice", "data2", "write") is False  # not granted
+    assert enforcer.enforce("alice", "data2", "write") is False
 
 
-@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
 async def test_only_default_policies_when_db_empty(mock_select: MagicMock, model_path: Path) -> None:
     provider = DatabaseEnforcerProvider(
@@ -221,26 +192,8 @@ async def test_only_default_policies_when_db_empty(mock_select: MagicMock, model
     assert enforcer.enforce("admin", "data1", "write") is False
 
 
-@pytest.mark.asyncio
-@patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
-async def test_denies_all_when_no_policies(mock_select: MagicMock, model_path: Path) -> None:
-    provider = DatabaseEnforcerProvider(
-        model_path=model_path,
-        session_factory=_make_session([]),
-        policy_model=PolicyRow,
-        policy_mapper=lambda p: (p.sub, p.obj, p.act),
-    )
-    enforcer = await provider()
-
-    assert enforcer.enforce("admin", "anything", "read") is False
-    assert enforcer.enforce("alice", "data", "write") is False
-
-
-# ---------------------------------------------------------------------------
-# Session context manager
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
 async def test_session_context_manager_entered_and_exited(
     mock_select: MagicMock, model_path: Path
@@ -258,11 +211,8 @@ async def test_session_context_manager_entered_and_exited(
     session_factory.return_value.__aexit__.assert_awaited_once()
 
 
-# ---------------------------------------------------------------------------
-# Multiple calls → independent enforcers
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
+@pytest.mark.unit
+@pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
 async def test_each_call_returns_new_enforcer(mock_select: MagicMock, model_path: Path) -> None:
     provider = DatabaseEnforcerProvider(
