@@ -3,7 +3,6 @@ from typing import Annotated
 
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
 from model import UserSchema
 
 HEADER_AUTH_SCHEME = HTTPBearer(auto_error=False)
