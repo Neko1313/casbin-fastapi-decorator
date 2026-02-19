@@ -51,19 +51,11 @@ jobs:
       # -----------------------------------------------------------------
       # 2. Bump version in all pyproject.toml files
       # -----------------------------------------------------------------
-      - name: Bump version in pyproject.toml (core)
+      - name: Bump version in all packages
         run: |
-          sed -i 's/^version = ".*"/version = "${{ steps.version.outputs.version }}"/' pyproject.toml
-
-      - name: Bump version in pyproject.toml (jwt)
-        run: |
-          sed -i 's/^version = ".*"/version = "${{ steps.version.outputs.version }}"/' \
-            packages/casbin-fastapi-decorator-jwt/pyproject.toml
-
-      - name: Bump version in pyproject.toml (db)
-        run: |
-          sed -i 's/^version = ".*"/version = "${{ steps.version.outputs.version }}"/' \
-            packages/casbin-fastapi-decorator-db/pyproject.toml
+          uv version ${{ steps.version.outputs.version }}
+          uv version ${{ steps.version.outputs.version }} --package casbin-fastapi-decorator-jwt
+          uv version ${{ steps.version.outputs.version }} --package casbin-fastapi-decorator-db
 
       # -----------------------------------------------------------------
       # 3. Generate changelog
