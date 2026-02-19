@@ -10,7 +10,7 @@ on:
       - "ruff.toml"
       - "ty.toml"
   push:
-    branches: [master]
+    branches: [main]
 
 permissions:
   contents: read

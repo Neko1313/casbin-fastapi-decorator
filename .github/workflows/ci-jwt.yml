@@ -6,7 +6,7 @@ on:
     paths:
       - "packages/casbin-fastapi-decorator-jwt/**"
   push:
-    branches: [master]
+    branches: [main]
 
 permissions:
   contents: read

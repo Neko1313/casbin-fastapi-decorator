@@ -77,7 +77,7 @@ jobs:
 
       - name: Push commit and tag
         run: |
-          git push origin master
+          git push origin main
           git push origin "${{ steps.version.outputs.tag }}"
 
       # -----------------------------------------------------------------
