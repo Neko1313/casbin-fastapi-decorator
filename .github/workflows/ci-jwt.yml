@@ -1,0 +1,79 @@
+name: "CI: JWT"
+
+on:
+  pull_request:
+    branches: ["*"]
+    paths:
+      - "packages/casbin-fastapi-decorator-jwt/**"
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/casbin-fastapi-decorator-jwt
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+        working-directory: .
+
+      - name: Install workspace extras
+        run: uv pip install -e '.[jwt,db]'
+        working-directory: .
+
+      - name: Ruff
+        run: uv run ruff check --output-format github src tests
+
+      - name: Bandit
+        run: uv run bandit -c pyproject.toml -r src
+
+      - name: Type check
+        run: uv run ty check
+
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/casbin-fastapi-decorator-jwt
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+        working-directory: .
+
+      - name: Install workspace extras
+        run: uv pip install -e '.[jwt,db]'
+        working-directory: .
+
+      - name: Run tests
+        run: |
+          uv run pytest tests \
+            --junitxml=reports/junit.xml \
+            --cov=src \
+            --cov-report=xml:reports/coverage.xml \
+            --cov-report=term-missing
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jwt-test-results
+          path: packages/casbin-fastapi-decorator-jwt/reports/
