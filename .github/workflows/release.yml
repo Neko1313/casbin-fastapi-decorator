@@ -39,8 +39,8 @@ jobs:
         run: |
           NEXT=$(git cliff --bumped-version 2>/dev/null || echo "")
           if [[ -z "$NEXT" ]]; then
-            echo "::error::Could not determine next version. Ensure there are conventional commits since the last tag."
-            exit 1
+            echo "No previous tag found, bootstrapping with v0.1.0"
+            NEXT="v0.1.0"
           fi
           # strip leading 'v' for pyproject.toml (e.g. v0.2.0 -> 0.2.0)
           NEXT_CLEAN="${NEXT#v}"
