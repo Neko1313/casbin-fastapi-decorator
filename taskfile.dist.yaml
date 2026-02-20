@@ -126,9 +126,12 @@ tasks:
       - git push origin {{.TAG}}
 
   release:publish:
-    desc: Build and publish only the core package to PyPI
+    desc: Build and publish all packages to PyPI
     cmds:
+      - rm -rf dist
       - uv build
+      - uv build --package casbin-fastapi-decorator-jwt
+      - uv build --package casbin-fastapi-decorator-db
       - uv publish
 
   release:github:
