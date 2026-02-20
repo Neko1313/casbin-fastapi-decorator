@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.2] - 2026-02-20
+## [0.1.3] - 2026-02-20
+### Documentation
+
+- pyproject.toml add keywords and classifiers by @Neko1313
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v0.1.2...v0.1.3## [0.1.2] - 2026-02-20
 ### Bug Fixes
 
 - **lib**: fix publish sub packages by @Neko1313
