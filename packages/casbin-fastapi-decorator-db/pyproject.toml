@@ -1,6 +1,6 @@
 [project]
 name = "casbin-fastapi-decorator-db"
-version = "0.1.1"
+version = "0.1.2"
 description = "Database enforcer provider for casbin-fastapi-decorator"
 readme = "README.md"
 requires-python = ">=3.10"

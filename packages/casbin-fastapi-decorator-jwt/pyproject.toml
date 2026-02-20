@@ -1,6 +1,6 @@
 [project]
 name = "casbin-fastapi-decorator-jwt"
-version = "0.1.1"
+version = "0.1.2"
 description = "JWT user provider for casbin-fastapi-decorator"
 readme = "README.md"
 requires-python = ">=3.10"
