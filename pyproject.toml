@@ -7,6 +7,35 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Neko1313", email = "nikita.ribalchencko@yandex.ru" }
 ]
+keywords = [
+    "casbin",
+    "fastapi",
+    "authorization",
+    "rbac",
+    "abac",
+    "permissions",
+    "decorator",
+    "access-control",
+    "jwt",
+    "sqlalchemy",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Framework :: FastAPI",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+    "Operating System :: OS Independent",
+]
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.115.0",
