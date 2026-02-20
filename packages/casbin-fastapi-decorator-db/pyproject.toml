@@ -2,6 +2,7 @@
 name = "casbin-fastapi-decorator-db"
 version = "0.1.0"
 description = "Database enforcer provider for casbin-fastapi-decorator"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "casbin-fastapi-decorator",

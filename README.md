@@ -97,34 +97,23 @@ Wraps a dependency whose value needs to be obtained from the request and passed 
 
 ## JWT provider
 
-```python
-from casbin_fastapi_decorator_jwt import JWTUserProvider
+[`casbin-fastapi-decorator-jwt`](packages/casbin-fastapi-decorator-jwt) — extracts and validates a JWT from the Bearer header and/or a cookie.
 
-user_provider = JWTUserProvider(
-    secret_key="your-secret",
-    algorithm="HS256",             # default
-    cookie_name="access_token",    # optional, enables reading from cookie
-    user_model=UserSchema,         # optional, Pydantic model for payload validation
-)
+```bash
+pip install "casbin-fastapi-decorator[jwt]"
 ```
 
-Extracts JWT from the Bearer header and/or cookie. If `user_model` is specified, validates the payload via `model_validate()`.
+See [packages/casbin-fastapi-decorator-jwt/README.md](packages/casbin-fastapi-decorator-jwt/README.md) for full API and usage.
 
 ## DB provider
 
-```python
-from casbin_fastapi_decorator_db import DatabaseEnforcerProvider
+[`casbin-fastapi-decorator-db`](packages/casbin-fastapi-decorator-db) — loads Casbin policies from a SQLAlchemy async session.
 
-enforcer_provider = DatabaseEnforcerProvider(
-    model_path="model.conf",
-    session_factory=get_async_session,
-    policy_model=PolicyORM,
-    policy_mapper=lambda p: (p.sub, p.obj, p.act),
-    default_policies=[("admin", "*", "*")],  # optional
-)
+```bash
+pip install "casbin-fastapi-decorator[db]"
 ```
 
-Loads policies from a SQLAlchemy async session and creates a `casbin.Enforcer` per request. `default_policies` are added on top of the DB policies.
+See [packages/casbin-fastapi-decorator-db/README.md](packages/casbin-fastapi-decorator-db/README.md) for full API and usage.
 
 ## Examples
 
