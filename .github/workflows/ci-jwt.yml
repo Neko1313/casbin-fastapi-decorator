@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/casbin-fastapi-decorator-jwt
         shell: bash
     steps:
       - uses: actions/checkout@v4
@@ -25,28 +24,20 @@ jobs:
         with:
           enable-cache: true
 
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install dependencies
-        run: uv sync --all-groups
-        working-directory: .
+        run: task install
 
-      - name: Install workspace extras
-        run: uv pip install -e '.[jwt,db]'
-        working-directory: .
-
-      - name: Ruff
-        run: uv run ruff check --output-format github src tests
-
-      - name: Bandit
-        run: uv run bandit -c pyproject.toml -r src
-
-      - name: Type check
-        run: uv run ty check
+      - name: Lint
+        run: task jwt:lint CI=true
 
   test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/casbin-fastapi-decorator-jwt
         shell: bash
     steps:
       - uses: actions/checkout@v4
@@ -55,21 +46,15 @@ jobs:
         with:
           enable-cache: true
 
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install dependencies
-        run: uv sync --all-groups
-        working-directory: .
+        run: task install
 
-      - name: Install workspace extras
-        run: uv pip install -e '.[jwt,db]'
-        working-directory: .
-
-      - name: Run tests
-        run: |
-          uv run pytest tests \
-            --junitxml=reports/junit.xml \
-            --cov=src \
-            --cov-report=xml:reports/coverage.xml \
-            --cov-report=term-missing
+      - name: Test
+        run: task jwt:test CI=true
 
       - name: Upload test results
         if: always()

@@ -7,14 +7,14 @@ tasks:
       - |
         if [[ "{{.CI}}" == "true" ]]; then
           echo "Running JWT linters with CI reports..."
-          mkdir -p reports
-          uv run ruff check --output-format json --output-file reports/ruff.json src tests
-          uv run bandit -c pyproject.toml -r src -o reports/bandit.json --format json
-          uv run ty check --output-format github > reports/gl-code-quality-report.json
+          mkdir -p {{.TASKFILE_DIR}}/reports
+          uv run ruff check --output-format json --output-file {{.TASKFILE_DIR}}/reports/ruff.json {{.TASKFILE_DIR}}/src {{.TASKFILE_DIR}}/tests
+          uv run bandit -c {{.TASKFILE_DIR}}/pyproject.toml -r {{.TASKFILE_DIR}}/src -o {{.TASKFILE_DIR}}/reports/bandit.json --format json
+          uv run ty check --output-format github > {{.TASKFILE_DIR}}/reports/gl-code-quality-report.json
         else
           echo "Running JWT linters for development..."
-          uv run ruff check --fix src tests
-          uv run bandit -c pyproject.toml -r src
+          uv run ruff check --fix {{.TASKFILE_DIR}}/src {{.TASKFILE_DIR}}/tests
+          uv run bandit -c {{.TASKFILE_DIR}}/pyproject.toml -r {{.TASKFILE_DIR}}/src
           uv run ty check
         fi
 
@@ -24,13 +24,13 @@ tasks:
       - |
         if [[ "{{.CI}}" == "true" ]]; then
           echo "Running JWT tests with CI reports..."
-          mkdir -p reports
-          uv run pytest tests \
-            --junitxml=reports/junit.xml \
-            --cov=src \
-            --cov-report=xml:reports/coverage.xml \
+          mkdir -p {{.TASKFILE_DIR}}/reports
+          uv run pytest {{.TASKFILE_DIR}}/tests \
+            --junitxml={{.TASKFILE_DIR}}/reports/junit.xml \
+            --cov={{.TASKFILE_DIR}}/src \
+            --cov-report=xml:{{.TASKFILE_DIR}}/reports/coverage.xml \
             --cov-report=term-missing
         else
           echo "Running JWT tests for development..."
-          uv run pytest tests --cov=src --cov-report=term-missing:skip-covered
+          uv run pytest {{.TASKFILE_DIR}}/tests --cov={{.TASKFILE_DIR}}/src --cov-report=term-missing:skip-covered
         fi

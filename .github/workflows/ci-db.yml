@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/casbin-fastapi-decorator-db
         shell: bash
     steps:
       - uses: actions/checkout@v4
@@ -25,42 +24,20 @@ jobs:
         with:
           enable-cache: true
 
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install dependencies
-        run: uv sync --all-groups
-        working-directory: .
+        run: task install
 
-      - name: Install workspace extras
-        run: uv pip install -e '.[jwt,db]'
-        working-directory: .
-
-      - name: Ruff
-        run: uv run ruff check --output-format github src tests
-
-      - name: Bandit
-        run: uv run bandit -c pyproject.toml -r src
-
-      - name: Type check
-        run: uv run ty check
+      - name: Lint
+        run: task db:lint CI=true
 
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U test"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
     defaults:
       run:
-        working-directory: packages/casbin-fastapi-decorator-db
         shell: bash
     steps:
       - uses: actions/checkout@v4
@@ -69,23 +46,17 @@ jobs:
         with:
           enable-cache: true
 
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install dependencies
-        run: uv sync --all-groups
-        working-directory: .
+        run: task install
 
-      - name: Install workspace extras
-        run: uv pip install -e '.[jwt,db]'
-        working-directory: .
-
-      - name: Run tests
+      - name: Test
         env:
-          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
-        run: |
-          uv run pytest tests \
-            --junitxml=reports/junit.xml \
-            --cov=src \
-            --cov-report=xml:reports/coverage.xml \
-            --cov-report=term-missing
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+        run: task db:test CI=true
 
       - name: Upload test results
         if: always()

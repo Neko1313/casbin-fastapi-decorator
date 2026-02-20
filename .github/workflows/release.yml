@@ -10,6 +10,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     environment: release
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,102 +27,57 @@ jobs:
         with:
           enable-cache: true
 
+      - uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install git-cliff
         uses: kenji-miyake/setup-git-cliff@v2
 
       - name: Install dependencies
-        run: uv sync --all-groups
+        run: task install
 
       # -----------------------------------------------------------------
       # 1. Determine next version via conventional commits
       # -----------------------------------------------------------------
       - name: Determine next version
         id: version
-        run: |
-          NEXT=$(git cliff --bumped-version 2>/dev/null || echo "")
-          if [[ -z "$NEXT" ]]; then
-            echo "No previous tag found, bootstrapping with v0.1.0"
-            NEXT="v0.1.0"
-          fi
-          # strip leading 'v' for pyproject.toml (e.g. v0.2.0 -> 0.2.0)
-          NEXT_CLEAN="${NEXT#v}"
-          echo "tag=$NEXT"       >> "$GITHUB_OUTPUT"
-          echo "version=$NEXT_CLEAN" >> "$GITHUB_OUTPUT"
-          echo "Next version: $NEXT ($NEXT_CLEAN)"
+        run: task release:version
 
       # -----------------------------------------------------------------
       # 2. Bump version in all pyproject.toml files
       # -----------------------------------------------------------------
-      - name: Bump version in all packages
-        run: |
-          uv version ${{ steps.version.outputs.version }}
-          uv version ${{ steps.version.outputs.version }} --package casbin-fastapi-decorator-jwt
-          uv version ${{ steps.version.outputs.version }} --package casbin-fastapi-decorator-db
+      - name: Bump versions
+        run: task release:bump VERSION=${{ steps.version.outputs.version }}
 
       # -----------------------------------------------------------------
       # 3. Generate changelog
       # -----------------------------------------------------------------
       - name: Generate changelog
-        run: git cliff --tag "${{ steps.version.outputs.tag }}" --output CHANGELOG.md
+        run: task release:changelog TAG=${{ steps.version.outputs.tag }}
 
       # -----------------------------------------------------------------
       # 4. Commit version bump + changelog, tag
       # -----------------------------------------------------------------
       - name: Commit and tag
-        run: |
-          git add pyproject.toml \
-                  packages/casbin-fastapi-decorator-jwt/pyproject.toml \
-                  packages/casbin-fastapi-decorator-db/pyproject.toml \
-                  CHANGELOG.md
-          git commit -m "chore(release): ${{ steps.version.outputs.tag }}"
-          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+        run: task release:commit TAG=${{ steps.version.outputs.tag }}
 
-      - name: Push commit and tag
-        run: |
-          git push origin main
-          git push origin "${{ steps.version.outputs.tag }}"
+      - name: Push
+        run: task release:push TAG=${{ steps.version.outputs.tag }}
 
       # -----------------------------------------------------------------
-      # 5. Build and publish all packages to PyPI
+      # 5. Build and publish only core package to PyPI
+      #    Sub-packages are pulled in as optional dependencies
       # -----------------------------------------------------------------
-      - name: Build and publish core
+      - name: Publish to PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          uv build
-          uv publish
-
-      - name: Build and publish jwt
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        working-directory: packages/casbin-fastapi-decorator-jwt
-        run: |
-          uv build
-          uv publish
-
-      - name: Build and publish db
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        working-directory: packages/casbin-fastapi-decorator-db
-        run: |
-          uv build
-          uv publish
+        run: task release:publish
 
       # -----------------------------------------------------------------
       # 6. Create GitHub Release
       # -----------------------------------------------------------------
-      - name: Extract release notes
-        id: notes
-        run: |
-          # Extract notes for current version from CHANGELOG.md
-          NOTES=$(git cliff --tag "${{ steps.version.outputs.tag }}" --unreleased --strip header)
-          # Write to file to avoid escaping issues
-          echo "$NOTES" > /tmp/release-notes.md
-
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --title "${{ steps.version.outputs.tag }}" \
-            --notes-file /tmp/release-notes.md
+        run: task release:github TAG=${{ steps.version.outputs.tag }}
