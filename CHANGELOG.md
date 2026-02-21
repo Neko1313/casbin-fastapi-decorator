@@ -2,7 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.3] - 2026-02-20
+## [0.1.4] - 2026-02-21
+### Miscellaneous
+
+- Add Dependabot configuration for automated dependency updates by @Neko1313 in [#4](https://github.com/Neko1313/casbin-fastapi-decorator/pull/4)
+- **deps**: chore(deps): bump actions/upload-artifact from 4 to 6 by @dependabot[bot] in [#5](https://github.com/Neko1313/casbin-fastapi-decorator/pull/5)
+- **deps**: chore(deps): bump actions/checkout from 4 to 6 by @dependabot[bot] in [#6](https://github.com/Neko1313/casbin-fastapi-decorator/pull/6)
+- **deps**: chore(deps): bump astral-sh/setup-uv from 5 to 7 by @dependabot[bot] in [#7](https://github.com/Neko1313/casbin-fastapi-decorator/pull/7)
+- **deps-dev**: chore(deps-dev): update uv-build requirement from <0.10.0,>=0.9.18 to >=0.9.18,<0.11.0 in /packages/casbin-fastapi-decorator-jwt by @dependabot[bot] in [#8](https://github.com/Neko1313/casbin-fastapi-decorator/pull/8)
+- **deps-dev**: chore(deps-dev): update uv-build requirement from <0.10.0,>=0.9.18 to >=0.9.18,<0.11.0 in /packages/casbin-fastapi-decorator-db by @dependabot[bot] in [#9](https://github.com/Neko1313/casbin-fastapi-decorator/pull/9)
+- **deps-dev**: chore(deps-dev): update uv-build requirement from <0.10.0,>=0.9.18 to >=0.9.18,<0.11.0 by @dependabot[bot] in [#10](https://github.com/Neko1313/casbin-fastapi-decorator/pull/10)
+- update uv.lock file by @Neko1313
+
+
+### New Contributors
+
+- @dependabot[bot] made their first contribution in [#10](https://github.com/Neko1313/casbin-fastapi-decorator/pull/10)
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v0.1.3...v0.1.4## [0.1.3] - 2026-02-20
 ### Documentation
 
 - pyproject.toml add keywords and classifiers by @Neko1313
