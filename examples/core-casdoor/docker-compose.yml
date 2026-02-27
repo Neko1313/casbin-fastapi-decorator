@@ -1,0 +1,17 @@
+services:
+  casdoor:
+    image: casbin/casdoor-all-in-one
+    ports:
+      - "8000:8000"
+    volumes:
+      # Override Casdoor config and inject seed data.
+      # app.conf connects to the embedded MySQL (root / 123456 on localhost).
+      - ./casdoor/app.conf:/conf/app.conf
+      - ./casdoor/init_data.json:/conf/init_data.json
+    healthcheck:
+      # Casdoor exposes a simple HTML page at "/"; wait until it responds.
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/ > /dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s

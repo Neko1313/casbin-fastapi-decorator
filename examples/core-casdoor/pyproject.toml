@@ -1,0 +1,15 @@
+[project]
+name = "core-casdoor"
+version = "0.1.0"
+description = "casbin-fastapi-decorator Casdoor OAuth2 example"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi[standard]>=0.128.6",
+    "casbin-fastapi-decorator",
+    "casbin-fastapi-decorator-casdoor",
+]
+
+[tool.uv.sources]
+casbin-fastapi-decorator = { workspace = true }
+casbin-fastapi-decorator-casdoor = { workspace = true }

@@ -50,6 +50,9 @@ jwt = [
 db = [
     "casbin-fastapi-decorator-db"
 ]
+casdoor = [
+    "casbin-fastapi-decorator-casdoor"
+]
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.11.0"]
@@ -61,11 +64,13 @@ members = [
     "examples/core",
     "examples/core-jwt",
     "examples/core-db",
+    "examples/core-casdoor",
 ]
 
 [tool.uv.sources]
 casbin-fastapi-decorator-jwt = { workspace = true }
 casbin-fastapi-decorator-db = { workspace = true }
+casbin-fastapi-decorator-casdoor = { workspace = true }
 
 
 [tool.pytest.ini_options]
