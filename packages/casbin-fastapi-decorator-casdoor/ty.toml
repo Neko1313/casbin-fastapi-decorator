@@ -1,0 +1,5 @@
+[environment]
+root = ["."]
+
+[src]
+include = ["src", "tests"]

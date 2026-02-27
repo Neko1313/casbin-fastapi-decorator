@@ -115,6 +115,33 @@ pip install "casbin-fastapi-decorator[db]"
 
 See [packages/casbin-fastapi-decorator-db/README.md](packages/casbin-fastapi-decorator-db/README.md) for full API and usage.
 
+## Casdoor provider
+
+[`casbin-fastapi-decorator-casdoor`](packages/casbin-fastapi-decorator-casdoor) — Casdoor OAuth2 authentication and remote Casbin policy enforcement.
+
+```bash
+pip install "casbin-fastapi-decorator[casdoor]"
+```
+
+```python
+from casbin_fastapi_decorator_casdoor import CasdoorEnforceTarget, CasdoorIntegration
+
+casdoor = CasdoorIntegration(
+    endpoint="http://localhost:8000",
+    client_id="...", client_secret="...", certificate=cert,
+    org_name="my_org", application_name="my_app",
+    target=CasdoorEnforceTarget(
+        enforce_id=lambda parsed: f"{parsed['owner']}/my_enforcer",
+    ),
+)
+app.include_router(casdoor.router)   # GET /callback, POST /logout
+guard = casdoor.create_guard()
+```
+
+`CasdoorEnforceTarget` selects the Casdoor enforce mode — by enforcer, permission, model, resource, or owner. Values can be static strings or callables resolved from the JWT payload at request time.
+
+See [packages/casbin-fastapi-decorator-casdoor/README.md](packages/casbin-fastapi-decorator-casdoor/README.md) for full API, compose pattern, and usage.
+
 ## Examples
 
 | Example | Description |
@@ -122,15 +149,16 @@ See [packages/casbin-fastapi-decorator-db/README.md](packages/casbin-fastapi-dec
 | [`examples/core`](examples/core) | Bearer token auth, file-based Casbin policies |
 | [`examples/core-jwt`](examples/core-jwt) | JWT auth via `JWTUserProvider`, file-based policies |
 | [`examples/core-db`](examples/core-db) | Bearer token auth, policies from SQLite via `DatabaseEnforcerProvider` |
+| [`examples/core-casdoor`](examples/core-casdoor) | Casdoor OAuth2 auth + remote enforcement, facade and compose patterns |
 
 ## Development
 
 Requires Python 3.10+, [uv](https://docs.astral.sh/uv/), [task](https://taskfile.dev/).
 
 ```bash
-task install           # uv sync --all-groups + install extras (jwt, db)
+task install           # uv sync --all-groups + install extras (jwt, db, casdoor)
 task lint              # ruff + ty + bandit for all packages
-task tests             # all tests (core + jwt + db)
+task tests             # all tests (core + jwt + db + casdoor)
 ```
 
 Individual package tasks:
@@ -142,6 +170,8 @@ task jwt:lint          # lint JWT package
 task jwt:test          # test JWT package
 task db:lint           # lint DB package
 task db:test           # test DB package (requires Docker for testcontainers)
+task casdoor:lint      # lint Casdoor package
+task casdoor:test      # test Casdoor package
 ```
 
 ## License
