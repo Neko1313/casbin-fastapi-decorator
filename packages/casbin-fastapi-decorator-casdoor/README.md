@@ -120,9 +120,13 @@ Main facade. Accepts all Casdoor SDK parameters plus:
 | `target` | required | :class:`CasdoorEnforceTarget` — which Casdoor API identifier to use |
 | `access_token_cookie` | `"access_token"` | Cookie name for the access token |
 | `refresh_token_cookie` | `"refresh_token"` | Cookie name for the refresh token |
-| `redirect_after_login` | `"/"` | URL to redirect to after OAuth2 callback |
+| `redirect_after_login` | `"/"` | Path or absolute URL to redirect after OAuth2 callback. Relative (`"/"`) stays on the same host; absolute (`"https://app.example.com/"`) redirects to another host. |
 | `cookie_secure` | `True` | Set `Secure` flag on cookies |
-| `cookie_samesite` | `"lax"` | `SameSite` policy for cookies |
+| `cookie_httponly` | `True` | Set `HttpOnly` flag on cookies |
+| `cookie_samesite` | `"lax"` | `SameSite` policy (`"lax"`, `"strict"`, `"none"`) |
+| `cookie_domain` | `None` | `Domain` attribute. Use `".example.com"` to share cookies across subdomains (e.g. `*.my-site.ru`) |
+| `cookie_path` | `"/"` | `Path` attribute of the cookie |
+| `cookie_max_age` | `None` | `Max-Age` in seconds; `None` = session cookie |
 | `router_prefix` | `""` | URL prefix for `/callback` and `/logout` |
 
 ### `CasdoorUserProvider`

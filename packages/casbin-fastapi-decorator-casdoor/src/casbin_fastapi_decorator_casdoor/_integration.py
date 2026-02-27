@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from casdoor import AsyncCasdoorSDK
 from fastapi import APIRouter, HTTPException
@@ -84,7 +84,11 @@ class CasdoorIntegration:
         refresh_token_cookie: str = "refresh_token",
         redirect_after_login: str = "/",
         cookie_secure: bool = True,
-        cookie_samesite: str = "lax",
+        cookie_httponly: bool = True,
+        cookie_samesite: Literal["lax", "strict", "none"] = "lax",
+        cookie_domain: str | None = None,
+        cookie_path: str = "/",
+        cookie_max_age: int | None = None,
         router_prefix: str = "",
     ) -> None:
         self._sdk = AsyncCasdoorSDK(
@@ -110,7 +114,11 @@ class CasdoorIntegration:
             refresh_token_cookie=refresh_token_cookie,
             redirect_after_login=redirect_after_login,
             cookie_secure=cookie_secure,
+            cookie_httponly=cookie_httponly,
             cookie_samesite=cookie_samesite,
+            cookie_domain=cookie_domain,
+            cookie_path=cookie_path,
+            cookie_max_age=cookie_max_age,
             prefix=router_prefix,
         )
 

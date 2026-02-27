@@ -1,0 +1,148 @@
+{
+  "organizations": [
+    {
+      "owner": "admin",
+      "name": "example-org",
+      "displayName": "Example Organization",
+      "websiteUrl": "http://localhost:8080",
+      "passwordType": "plain",
+      "passwordSalt": "",
+      "countryCodes": ["US"],
+      "languages": ["en"],
+      "initScore": 0,
+      "enableSoftDeletion": false
+    }
+  ],
+
+  "certs": [
+    {
+      "owner": "admin",
+      "name": "cert-example",
+      "displayName": "Example Certificate",
+      "scope": "JWT",
+      "type": "x509",
+      "cryptoAlgorithm": "RS256",
+      "bitSize": 2048,
+      "expireInYears": 10,
+      "certificate": "-----BEGIN CERTIFICATE-----\nMIIC2DCCAcCgAwIBAgIUdehFSHCw9b3QUw7Kg+UfTADcEQEwDQYJKoZIhvcNAQEL\nBQAwJjEkMCIGA1UEAwwbQ2FzZG9vciBFeGFtcGxlIENlcnRpZmljYXRlMB4XDTI2\nMDIyNzAzMDQ0M1oXDTM2MDIyNTAzMDQ0M1owJjEkMCIGA1UEAwwbQ2FzZG9vciBF\neGFtcGxlIENlcnRpZmljYXRlMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\nAQEAsG1LaxcbNp17HhFLyj0Byt9xFp5kFi/YIrzIpei+PIXCcSVAbGGy9yM18Liv\nJNygXDErYS8+qZOZr047o/8HCTQBcw8vuAOZL5TFLSqYBJMbPmRmwnNxnVs37/17\nuVh80kjeunzfgXtIYIbzm67Dwo5Qp64mBoFpoyzPbcoKGSaBbrh+yjHtevokWu2s\nx48qweDZwKKhxz2nFU76Zcm9KUh/Wj7w3kDqWfFTzSfGCUWePudkoVddpwin9clz\ntGgIf/b5L9seWJVwFX0SdDoPjiT0nkGtgXGkwqROvMLw4XI7MPmQnERmPpZxbS95\n7o7tnckVxvca83mF2YBY0B3mSwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQCUPK4D\n+u9uT/AtrHftJbuDo8ITRg+URNC9CRefghtRMM5oZy8FWBVxAE9So8eSZ6myIJQJ\ntQDzth9OO7u6bScCUjNh/lkLhMCVqbC2J9qXODQs6mR+A5BKMnQDD/gaxkzFEjPb\n6o6F5SchtaeOikCYngvJP2/f5E9QS5QZ9wN7zG/u7JlqWdNM9OuyASqQPGsQJ5W4\nwbNjVtrDLli2a4TnrH2Wl584BWuoT5ENZlpv7aHuA+LZVKLrMJ0BciyaRdfStkEj\n1gqHjx6e6gQo9vTC445XxskxPgPppTP+hoGhI5tmz7jVpYqxwlUteb8zcXsrAF+d\nQcFAyxahEu3iZGWD\n-----END CERTIFICATE-----\n",
+      "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAsG1LaxcbNp17HhFLyj0Byt9xFp5kFi/YIrzIpei+PIXCcSVA\nbGGy9yM18LivJNygXDErYS8+qZOZr047o/8HCTQBcw8vuAOZL5TFLSqYBJMbPmRm\nwnNxnVs37/17uVh80kjeunzfgXtIYIbzm67Dwo5Qp64mBoFpoyzPbcoKGSaBbrh+\nyjHtevokWu2sx48qweDZwKKhxz2nFU76Zcm9KUh/Wj7w3kDqWfFTzSfGCUWePudk\noVddpwin9clztGgIf/b5L9seWJVwFX0SdDoPjiT0nkGtgXGkwqROvMLw4XI7MPmQ\nnERmPpZxbS957o7tnckVxvca83mF2YBY0B3mSwIDAQABAoIBAEQikYPUMqBPBWNB\nTsHV+cE9tdEEbqba51/TBLJ+RindhpBn0I+K07D6GjTTPmDAC/ZOzvADbPHUnP/E\n+OeG8FKvkPe8n7MzQI/NprCgyIDLxzO7Vqw2JWSd++ZlQMj90YbsuYfP/gllcThG\nJgKz5cpXZ/K6INlWVVO9VIaUBn5bachAtE9YxjeEioY8vwanYOqYSQohlvBdp5su\nhFMS7U1bkjnvFDhAsRKQB7aomSlO0/FlOyw9ygKo0ZvKVf0q7flfB6BckFe+hOhs\nSfOPnMJzw4rm2Q0PoHZHP1m4H+UOXYygynlVlh1nkjfiiMmXG67ojcAAmQWxjb9h\n2bWKQAECgYEA6EgbyC14W/R/XiHk8NlbnYxfv9+ilUw+wo+URNm9lgANB095d6aF\ndOGGXwjcXyCF1Z0SxtggUhJh8Hj9sLp1cuC3qnWkRxvQKBmMirzppB3Rp1TWkVOJ\nYZO/X7ZMeMRpykaNooih/L6w9YkrB9n8mRNwSgbHOLZbOqJf0JDfFksCgYEAwnEh\np1azZymZkAqODTzOy2TJtQ11H9HqE7++zOp26y3BOnME7kplAZr1QpTVcpUU2ts6\noFHp+DeB/4RxcM9/Xiu/tk6NftAHujVrMishZ2Rs5E+axTw+LjTdZFg2z9sFyPFl\nsDHGd05bv1cX62SzSndUPNipKtvFEZKwNXm6cAECgYEAwne8ardG0RW9nL2bwtj3\nDsv7TdSZdY1D7ffvFkWFqBOa1MgA1d+gU96MdPwiI7JC2jiLA9bmGFAzlvR00IUK\n14azvg6H3tC2URwyweSvZytf30vz5++cUQk1a5hgJaurNiIjajQiCkxMMwUH9abX\nCAFyPUe3ew+RCWHv/dmMLEkCgYEAoJGcIPxQGpkX3wNYW0Yj34LTr1f1qNlIXBa0\nEbRtj7ixIPtqzv1QfArjDqCpw32pQzJXL511gS0VhVRx+Z7gp3upTXuBDX/tYbBL\nXZqQczlTUxcJ0Gb3UmEFkp/mY6+TD2WJe/8ezdc/nLrnXdRC2vO/9J9W07W4/9IL\nAZ4MgAECgYEAh+BzzsPI+GDp7yEOrCpVJRFS+Q84oKmAGZ0pHlK9rCke95pS+ZxZ\nPADU0Gz+pqrN87btZg3BNZc1lAvW1U1SBg45kKsty7VQsgIMeWrM6zf8QQg6HUqG\niJUffEssW5xl+SvD4OBKE9qYuM9P5UqWKyE1uWg1IkXQlJPNw9S5tHo=\n-----END RSA PRIVATE KEY-----\n"
+    }
+  ],
+
+  "applications": [
+    {
+      "owner": "admin",
+      "name": "app-example",
+      "displayName": "FastAPI Example App",
+      "logo": "",
+      "homepageUrl": "http://localhost:8080",
+      "description": "casbin-fastapi-decorator-casdoor example",
+      "organization": "example-org",
+      "cert": "cert-example",
+      "enablePassword": true,
+      "enableSignUp": false,
+      "enableSignIn": true,
+      "grantTypes": ["authorization_code"],
+      "clientId": "example-client-id",
+      "clientSecret": "example-client-secret",
+      "redirectUris": ["http://localhost:8080/callback"],
+      "tokenFormat": "JWT",
+      "expireInHours": 168,
+      "refreshExpireInHours": 168
+    }
+  ],
+
+  "users": [
+    {
+      "owner": "example-org",
+      "name": "alice",
+      "displayName": "Alice (admin)",
+      "email": "alice@example.com",
+      "password": "alice123",
+      "type": "normal-user",
+      "score": 0,
+      "isAdmin": false,
+      "isForbidden": false,
+      "isDeleted": false,
+      "signupApplication": "app-example"
+    },
+    {
+      "owner": "example-org",
+      "name": "bob",
+      "displayName": "Bob (viewer)",
+      "email": "bob@example.com",
+      "password": "bob123",
+      "type": "normal-user",
+      "score": 0,
+      "isAdmin": false,
+      "isForbidden": false,
+      "isDeleted": false,
+      "signupApplication": "app-example"
+    }
+  ],
+
+  "models": [
+    {
+      "owner": "example-org",
+      "name": "model-acl",
+      "displayName": "ACL Model",
+      "modelText": "[request_definition]\nr = sub, obj, act\n\n[policy_definition]\np = sub, obj, act\n\n[policy_effect]\ne = some(where (p.eft == allow))\n\n[matchers]\nm = r.sub == p.sub && r.obj == p.obj && r.act == p.act"
+    }
+  ],
+
+  "enforcers": [
+    {
+      "owner": "example-org",
+      "name": "enforcer-example",
+      "displayName": "Example Enforcer",
+      "model": "example-org/model-acl",
+      "adapter": "",
+      "isEnabled": true
+    }
+  ],
+
+  "permissions": [
+    {
+      "owner": "example-org",
+      "name": "alice-articles-read",
+      "displayName": "Alice — read articles",
+      "users": ["example-org/alice"],
+      "roles": [],
+      "resources": ["articles"],
+      "actions": ["read"],
+      "effect": "Allow",
+      "isEnabled": true,
+      "model": "example-org/model-acl",
+      "adapter": "",
+      "resourceType": "Custom"
+    },
+    {
+      "owner": "example-org",
+      "name": "alice-articles-write",
+      "displayName": "Alice — write articles",
+      "users": ["example-org/alice"],
+      "roles": [],
+      "resources": ["articles"],
+      "actions": ["write"],
+      "effect": "Allow",
+      "isEnabled": true,
+      "model": "example-org/model-acl",
+      "adapter": "",
+      "resourceType": "Custom"
+    },
+    {
+      "owner": "example-org",
+      "name": "bob-articles-read",
+      "displayName": "Bob — read articles",
+      "users": ["example-org/bob"],
+      "roles": [],
+      "resources": ["articles"],
+      "actions": ["read"],
+      "effect": "Allow",
+      "isEnabled": true,
+      "model": "example-org/model-acl",
+      "adapter": "",
+      "resourceType": "Custom"
+    }
+  ]
+}
