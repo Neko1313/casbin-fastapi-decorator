@@ -60,5 +60,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: jwt-test-results
+          name: casdoor-test-results
           path: packages/casbin-fastapi-decorator-casdoor/reports/

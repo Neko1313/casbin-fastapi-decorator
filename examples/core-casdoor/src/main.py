@@ -3,6 +3,7 @@ from typing import Annotated
 from urllib.parse import urlencode
 
 from authz import _APP, _CLIENT_ID, _ENDPOINT, _ORG, casdoor, guard
+from casdoor import AsyncCasdoorSDK
 from fastapi import Depends, FastAPI
 from model import ArticleCreateSchema, ArticleSchema, Permission, Resource
 
@@ -81,7 +82,5 @@ async def me(
     token: Annotated[str, Depends(casdoor.user_provider)],
 ) -> dict:
     """Return the raw access-token payload (just to show auth works)."""
-    from casdoor import AsyncCasdoorSDK  # noqa: PLC0415
-
     sdk: AsyncCasdoorSDK = casdoor.sdk
     return sdk.parse_jwt_token(token)

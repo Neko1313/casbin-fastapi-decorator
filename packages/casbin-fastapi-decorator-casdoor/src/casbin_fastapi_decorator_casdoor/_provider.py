@@ -3,6 +3,7 @@ from __future__ import annotations
 from inspect import Parameter, Signature
 from typing import TYPE_CHECKING, Any
 
+import jwt
 from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyCookie
 
@@ -96,6 +97,6 @@ class CasdoorUserProvider:
         try:
             self._sdk.parse_jwt_token(access_token)
             self._sdk.parse_jwt_token(refresh_token)
-        except Exception as e:
+        except (ValueError, jwt.PyJWTError) as e:
             raise self._invalid_token_error(str(e)) from e
         return access_token

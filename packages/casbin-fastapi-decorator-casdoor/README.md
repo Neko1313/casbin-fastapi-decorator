@@ -153,3 +153,11 @@ Factory that returns a `fastapi.APIRouter` with two endpoints:
 
 - `GET {prefix}/callback` — exchanges OAuth2 code for tokens, sets cookies
 - `POST {prefix}/logout` — clears authentication cookies
+
+> **Security note — OAuth2 state / CSRF.**
+> The `state` query parameter sent by Casdoor is accepted but **not validated**.
+> This is an intentional trade-off for stateless deployments.
+> If your threat model requires CSRF protection, implement state validation
+> yourself: generate a nonce before redirecting to Casdoor, store it in a
+> short-lived cookie or session, and verify it in the callback handler before
+> exchanging the code.

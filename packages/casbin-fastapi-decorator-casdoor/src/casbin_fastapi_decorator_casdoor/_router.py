@@ -65,7 +65,7 @@ def make_casdoor_router(  # noqa: PLR0913
     }
 
     @router.get("/callback")
-    async def callback(code: str, _state: str = "") -> RedirectResponse:
+    async def callback(code: str, state: str = "") -> RedirectResponse:  # noqa: ARG001
         tokens = await sdk.get_oauth_token(code=code)
         if not tokens.get("access_token") or not tokens.get("refresh_token"):
             raise HTTPException(status_code=HTTP_401_UNAUTHORIZED)
@@ -87,9 +87,8 @@ def make_casdoor_router(  # noqa: PLR0913
         return response
 
     @router.post("/logout")
-    async def logout(response: Response) -> Response:
+    async def logout(response: Response) -> None:
         for key in (access_token_cookie, refresh_token_cookie):
             response.delete_cookie(key=key, **_cookie_kwargs)
-        return response
 
     return router
