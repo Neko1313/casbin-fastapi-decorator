@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.4] - 2026-02-21
+## [0.2.0] - 2026-02-27
+### Features
+
+- feat: Add casdoor provider by @Neko1313 in [#12](https://github.com/Neko1313/casbin-fastapi-decorator/pull/12)
+
+### Miscellaneous
+
+- chore: config llm agents by @Neko1313 in [#11](https://github.com/Neko1313/casbin-fastapi-decorator/pull/11)
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v0.1.4...v0.2.0## [0.1.4] - 2026-02-21
 ### Miscellaneous
 
 - Add Dependabot configuration for automated dependency updates by @Neko1313 in [#4](https://github.com/Neko1313/casbin-fastapi-decorator/pull/4)
