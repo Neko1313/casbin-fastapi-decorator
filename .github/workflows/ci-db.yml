@@ -68,6 +68,16 @@ jobs:
           flags: db
           fail_ci_if_error: true
 
+      - name: Upload test analytics to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/casbin-fastapi-decorator-db/reports/junit.xml
+          flags: db
+          report_type: test_results
+          fail_ci_if_error: true
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7

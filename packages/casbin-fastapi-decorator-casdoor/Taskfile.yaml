@@ -28,6 +28,7 @@ tasks:
           uv run pytest {{.TASKFILE_DIR}}/tests \
             --junitxml={{.TASKFILE_DIR}}/reports/junit.xml \
             --cov={{.TASKFILE_DIR}}/src \
+            --cov-branch \
             --cov-report=xml:{{.TASKFILE_DIR}}/reports/coverage.xml \
             --cov-report=term-missing
         else

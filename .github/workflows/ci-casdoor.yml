@@ -66,6 +66,16 @@ jobs:
           flags: casdoor
           fail_ci_if_error: true
 
+      - name: Upload test analytics to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/casbin-fastapi-decorator-casdoor/reports/junit.xml
+          flags: casdoor
+          report_type: test_results
+          fail_ci_if_error: true
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
