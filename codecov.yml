@@ -1,11 +1,23 @@
+codecov:
+  notify:
+    wait_for_ci: true
+  require_ci_to_pass: true
+
+comment:
+  behavior: default
+  layout: reach,diff,flags,tree
+  show_carryforward_flags: true
+
 coverage:
+  precision: 2
+  range:
+    - 60.0
+    - 80.0
+  round: down
   status:
-    project:
-      default:
-        flag_coverage_not_carried_forward: false
-    patch:
-      default:
-        flag_coverage_not_carried_forward: false
+    changes: false
+    patch: true
+    project: true
 
 flag_management:
   default_rules:
@@ -24,7 +36,4 @@ flag_management:
       paths:
         - packages/casbin-fastapi-decorator-casdoor/src/
 
-comment:
-  layout: "reach,diff,flags,tree"
-  behavior: default
-  require_changes: false
+slack_app: true
