@@ -1,12 +1,19 @@
 [project]
 name = "casbin-fastapi-decorator"
 version = "0.2.0"
-description = "Casbin authorization decorator factory for FastAPI"
-readme = "README.md"
+description = "Decorator-based authorization for FastAPI with Casbin, without middleware"
+readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE" }
 authors = [
     { name = "Neko1313", email = "nikita.ribalchencko@yandex.ru" }
 ]
+[project.urls]
+Homepage = "https://neko1313.github.io/casbin-fastapi-decorator-docs/"
+Documentation = "https://neko1313.github.io/casbin-fastapi-decorator-docs/docs/"
+Repository = "https://github.com/Neko1313/casbin-fastapi-decorator"
+Issues = "https://github.com/Neko1313/casbin-fastapi-decorator/issues"
+Changelog = "https://github.com/Neko1313/casbin-fastapi-decorator/blob/main/CHANGELOG.md"
+
 keywords = [
     "casbin",
     "fastapi",
