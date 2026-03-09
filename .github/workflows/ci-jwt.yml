@@ -5,6 +5,8 @@ on:
     branches: ["*"]
     paths:
       - "packages/casbin-fastapi-decorator-jwt/**"
+      - ".github/workflows/ci-jwt.yml"
+      - "pyproject.toml"
   push:
     branches: [main]
 

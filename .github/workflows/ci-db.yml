@@ -5,6 +5,8 @@ on:
     branches: ["*"]
     paths:
       - "packages/casbin-fastapi-decorator-db/**"
+      - ".github/workflows/ci-db.yml"
+      - "pyproject.toml"
   push:
     branches: [main]
 

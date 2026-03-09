@@ -9,6 +9,7 @@ on:
       - "pyproject.toml"
       - "ruff.toml"
       - "ty.toml"
+      - ".github/workflows/ci-core.yml"
   push:
     branches: [main]
 
