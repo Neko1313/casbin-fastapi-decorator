@@ -1,8 +1,38 @@
-# casbin-fastapi-decorator
+<div align="center">
+  <img src="https://neko1313.github.io/casbin-fastapi-decorator-docs/img/logo.png" alt="casbin-fastapi-decorator logo" width="120"/>
 
-Authorization decorator factory for FastAPI based on [Casbin](https://casbin.org/) and [fastapi-decorators](https://pypi.org/project/fastapi-decorators/).
+  <h1>casbin-fastapi-decorator</h1>
 
-Decorators are applied to routes — no middleware or dependencies in the endpoint signature.
+  <p>Authorization decorator factory for FastAPI based on <a href="https://casbin.org/">Casbin</a> and <a href="https://pypi.org/project/fastapi-decorators/">fastapi-decorators</a>.</p>
+
+  [![PyPI](https://img.shields.io/pypi/v/casbin-fastapi-decorator?color=blue)](https://pypi.org/project/casbin-fastapi-decorator/)
+  [![Python](https://img.shields.io/pypi/pyversions/casbin-fastapi-decorator)](https://pypi.org/project/casbin-fastapi-decorator/)
+  [![PyPI Downloads](https://static.pepy.tech/personalized-badge/casbin-fastapi-decorator?period=total&units=INTERNATIONAL_SYSTEM&left_color=lightgrey&right_color=blue&left_text=downloads)](https://pepy.tech/projects/casbin-fastapi-decorator)
+  [![License](https://img.shields.io/github/license/Neko1313/casbin-fastapi-decorator)](LICENSE)
+  [![CI](https://img.shields.io/github/actions/workflow/status/Neko1313/casbin-fastapi-decorator/ci.yml?label=CI)](https://github.com/Neko1313/casbin-fastapi-decorator/actions)
+
+  [📚 Documentation](https://neko1313.github.io/casbin-fastapi-decorator-docs/) · [PyPI](https://pypi.org/project/casbin-fastapi-decorator/) · [Casbin Ecosystem](https://casbin.org/ecosystem/)
+</div>
+
+---
+
+Decorators are applied directly to routes — no middleware, no extra parameters in your function signatures.
+
+## Why decorator, not middleware?
+
+| Feature | **casbin-fastapi-decorator** | fastapi-authz / fastapi-casbin-auth |
+|---|:---:|:---:|
+| Approach | Decorator per route | Global middleware |
+| Per-route permission config | ✅ | ❌ |
+| Dynamic objects from request | ✅ `AccessSubject` | ❌ |
+| No extra params in endpoint signature | ✅ | ❌ |
+| Native FastAPI DI integration | ✅ | ⚠️ partial |
+| JWT extras | ✅ | ❌ |
+| DB-backed policies (SQLAlchemy async) | ✅ | ❌ |
+| Casdoor OAuth2 integration | ✅ | ❌ |
+| Works with `APIRouter` | ✅ | ✅ |
+
+Middleware-based authorization checks every incoming request globally. With a decorator, you configure permissions exactly where the route is defined — no hidden side effects, no boilerplate dependencies in every function signature.
 
 ## Installation
 
@@ -10,11 +40,12 @@ Decorators are applied to routes — no middleware or dependencies in the endpoi
 pip install casbin-fastapi-decorator
 ```
 
-Additional providers:
+Optional extras — install only what you need:
 
 ```bash
-pip install "casbin-fastapi-decorator[jwt]"   # JWT authentication
-pip install "casbin-fastapi-decorator[db]"    # Policies from DB (SQLAlchemy)
+pip install "casbin-fastapi-decorator[jwt]"      # JWT authentication
+pip install "casbin-fastapi-decorator[db]"       # Policies from DB (SQLAlchemy)
+pip install "casbin-fastapi-decorator[casdoor]"  # Casdoor OAuth2
 ```
 
 ## Quick start
@@ -52,7 +83,7 @@ async def me():
 async def list_articles():
     return []
 
-# 5. Dynamic check — value from request
+# 5. Dynamic check — object resolved from request
 async def get_article(article_id: int) -> dict:
     return {"id": article_id, "owner": "alice"}
 
@@ -81,7 +112,7 @@ PermissionGuard(
 
 | Method | Description |
 |---|---|
-| `auth_required()` | Decorator: authentication only (user_provider must not raise an exception) |
+| `auth_required()` | Decorator: authentication only (user_provider must not raise) |
 | `require_permission(*args)` | Decorator: permission check via `enforcer.enforce(user, *args)` |
 
 ### `AccessSubject`
@@ -93,7 +124,7 @@ AccessSubject(
 )
 ```
 
-Wraps a dependency whose value needs to be obtained from the request and passed to the enforcer. By default, `selector` is identity (`lambda x: x`).
+Wraps a dependency whose value is resolved from the request and passed to the enforcer. By default, `selector` is identity (`lambda x: x`).
 
 ## JWT provider
 
@@ -164,14 +195,10 @@ task tests             # all tests (core + jwt + db + casdoor)
 Individual package tasks:
 
 ```bash
-task core:lint         # lint core only
-task core:test         # test core only
-task jwt:lint          # lint JWT package
-task jwt:test          # test JWT package
-task db:lint           # lint DB package
-task db:test           # test DB package (requires Docker for testcontainers)
-task casdoor:lint      # lint Casdoor package
-task casdoor:test      # test Casdoor package
+task core:lint         task core:test
+task jwt:lint          task jwt:test
+task db:lint           task db:test         # requires Docker (testcontainers)
+task casdoor:lint      task casdoor:test
 ```
 
 ## License
