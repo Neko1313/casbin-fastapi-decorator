@@ -58,6 +58,14 @@ jobs:
           TESTCONTAINERS_RYUK_DISABLED: "true"
         run: task db:test CI=true
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/casbin-fastapi-decorator-db/reports/coverage.xml
+          flags: db
+          fail_ci_if_error: true
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7

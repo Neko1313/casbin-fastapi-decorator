@@ -60,6 +60,14 @@ jobs:
       - name: Test
         run: task core:test CI=true
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: reports/coverage.xml
+          flags: core
+          fail_ci_if_error: true
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
