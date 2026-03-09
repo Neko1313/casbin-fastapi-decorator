@@ -36,4 +36,3 @@ flag_management:
       paths:
         - packages/casbin-fastapi-decorator-casdoor/src/
 
-slack_app: true
