@@ -1,0 +1,30 @@
+coverage:
+  status:
+    project:
+      default:
+        flag_coverage_not_carried_forward: false
+    patch:
+      default:
+        flag_coverage_not_carried_forward: false
+
+flag_management:
+  default_rules:
+    carryforward: true
+  individual_flags:
+    - name: core
+      paths:
+        - src/
+    - name: jwt
+      paths:
+        - packages/casbin-fastapi-decorator-jwt/src/
+    - name: db
+      paths:
+        - packages/casbin-fastapi-decorator-db/src/
+    - name: casdoor
+      paths:
+        - packages/casbin-fastapi-decorator-casdoor/src/
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false
