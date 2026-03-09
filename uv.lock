@@ -274,7 +274,7 @@ wheels = [
 
 [[package]]
 name = "casbin-fastapi-decorator"
-version = "0.1.4"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "casbin" },
@@ -332,7 +332,7 @@ test = [
 
 [[package]]
 name = "casbin-fastapi-decorator-casdoor"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "packages/casbin-fastapi-decorator-casdoor" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },
@@ -365,7 +365,7 @@ test = [
 
 [[package]]
 name = "casbin-fastapi-decorator-db"
-version = "0.1.4"
+version = "0.2.0"
 source = { editable = "packages/casbin-fastapi-decorator-db" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },
@@ -404,7 +404,7 @@ test = [
 
 [[package]]
 name = "casbin-fastapi-decorator-jwt"
-version = "0.1.4"
+version = "0.2.0"
 source = { editable = "packages/casbin-fastapi-decorator-jwt" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },

@@ -7,12 +7,6 @@ license = { file = "LICENSE" }
 authors = [
     { name = "Neko1313", email = "nikita.ribalchencko@yandex.ru" }
 ]
-[project.urls]
-Homepage = "https://neko1313.github.io/casbin-fastapi-decorator-docs/"
-Documentation = "https://neko1313.github.io/casbin-fastapi-decorator-docs/docs/"
-Repository = "https://github.com/Neko1313/casbin-fastapi-decorator"
-Issues = "https://github.com/Neko1313/casbin-fastapi-decorator/issues"
-Changelog = "https://github.com/Neko1313/casbin-fastapi-decorator/blob/main/CHANGELOG.md"
 
 keywords = [
     "casbin",
@@ -49,6 +43,13 @@ dependencies = [
     "fastapi-decorators>=0.5.0",
     "casbin>=1.36.0",
 ]
+
+[project.urls]
+Homepage = "https://neko1313.github.io/casbin-fastapi-decorator-docs/"
+Documentation = "https://neko1313.github.io/casbin-fastapi-decorator-docs/docs/"
+Repository = "https://github.com/Neko1313/casbin-fastapi-decorator"
+Issues = "https://github.com/Neko1313/casbin-fastapi-decorator/issues"
+Changelog = "https://github.com/Neko1313/casbin-fastapi-decorator/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 jwt = [
