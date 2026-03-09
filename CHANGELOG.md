@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.0] - 2026-02-27
+## [0.2.1] - 2026-03-09
+### Bug Fixes
+
+- pyproject.toml by @Neko1313
+
+### Documentation
+
+- add urls at pyproject.toml by @Neko1313
+
+### Miscellaneous
+
+- **deps**: chore(deps): bump actions/upload-artifact from 6 to 7 by @dependabot[bot] in [#13](https://github.com/Neko1313/casbin-fastapi-decorator/pull/13)
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v0.2.0...v0.2.1## [0.2.0] - 2026-02-27
 ### Features
 
 - feat: Add casdoor provider by @Neko1313 in [#12](https://github.com/Neko1313/casbin-fastapi-decorator/pull/12)
