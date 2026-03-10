@@ -10,6 +10,7 @@
   [![PyPI Downloads](https://static.pepy.tech/personalized-badge/casbin-fastapi-decorator?period=total&units=INTERNATIONAL_SYSTEM&left_color=lightgrey&right_color=blue&left_text=downloads)](https://pepy.tech/projects/casbin-fastapi-decorator)
   [![License](https://img.shields.io/github/license/Neko1313/casbin-fastapi-decorator)](LICENSE)
   [![CI](https://img.shields.io/github/actions/workflow/status/Neko1313/casbin-fastapi-decorator/ci.yml?label=CI)](https://github.com/Neko1313/casbin-fastapi-decorator/actions)
+  [![codecov](https://codecov.io/gh/Neko1313/casbin-fastapi-decorator/graph/badge.svg?token=05ZhOXGetg)](https://codecov.io/gh/Neko1313/casbin-fastapi-decorator)
 
   [📚 Documentation](https://neko1313.github.io/casbin-fastapi-decorator-docs/) · [PyPI](https://pypi.org/project/casbin-fastapi-decorator/) · [Casbin Ecosystem](https://casbin.org/ecosystem/)
 </div>
