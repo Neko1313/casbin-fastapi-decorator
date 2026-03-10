@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-03-10
+### Bug Fixes
+
+- **CI**: fix(CI): integration codecov by @Neko1313 in [#14](https://github.com/Neko1313/casbin-fastapi-decorator/pull/14)
+- **CI**: fix codecov config file by @Neko1313
+- **CI**: fix codecov config file by @Neko1313
+
+### Documentation
+
+- fix generator changelog by @Neko1313
+- update readme by @Neko1313
+- add badge codecov by @Neko1313
+
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v0.2.1...v0.2.2
 ## [0.2.1] - 2026-03-09
 ### Bug Fixes
 
@@ -75,15 +92,11 @@ All notable changes to this project will be documented in this file.
 
 - **docs**: fix docs by @Neko1313
 
-### Miscellaneous
-
-- **ci**: fix ci/cd pipeline by @Neko1313
-
 
 
 
 **Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v0.1.0...v0.1.1
-## [0.1.0] - 2026-02-19
+## [0.1.0] - 2026-02-20
 ### Bug Fixes
 
 - **example**: A more illustrative example by @Neko1313
@@ -97,6 +110,7 @@ All notable changes to this project will be documented in this file.
 - **CI/CD**: Add CI/CD workflows and release automation by @Neko1313 in [#3](https://github.com/Neko1313/casbin-fastapi-decorator/pull/3)
 - **CD**: fix ci stage by @Neko1313
 - **CD**: fix ci stages by @Neko1313
+- **ci**: fix ci/cd pipeline by @Neko1313
 
 ### Testing
 
