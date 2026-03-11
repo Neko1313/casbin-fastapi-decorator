@@ -11,7 +11,10 @@ from casbin_fastapi_decorator_casdoor._enforcer import (
     CasdoorEnforceTarget,
 )
 from casbin_fastapi_decorator_casdoor._provider import CasdoorUserProvider
-from casbin_fastapi_decorator_casdoor._router import make_casdoor_router
+from casbin_fastapi_decorator_casdoor._router import (
+    CasdoorStateManager,
+    make_casdoor_router,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -54,7 +57,8 @@ class CasdoorIntegration:
             ...
 
     For advanced customisation (custom ``user_factory``, different enforce
-    target per route, etc.) compose the components manually::
+    target per route, state handling strategy, etc.) compose the components
+    manually::
 
         sdk = AsyncCasdoorSDK(...)
         target = CasdoorEnforceTarget(permission_id="my_org/can_read")
@@ -80,6 +84,7 @@ class CasdoorIntegration:
         org_name: str,
         application_name: str,
         target: CasdoorEnforceTarget,
+        state_manager: CasdoorStateManager | None = None,
         access_token_cookie: str = "access_token",
         refresh_token_cookie: str = "refresh_token",
         redirect_after_login: str = "/",
@@ -110,6 +115,7 @@ class CasdoorIntegration:
         )
         self._router = make_casdoor_router(
             self._sdk,
+            state_manager=state_manager,
             access_token_cookie=access_token_cookie,
             refresh_token_cookie=refresh_token_cookie,
             redirect_after_login=redirect_after_login,
@@ -140,7 +146,8 @@ class CasdoorIntegration:
     @property
     def router(self) -> APIRouter:
         """
-        :class:`APIRouter` with ``GET /callback`` and ``POST /logout``.
+        :class:`APIRouter` with ``GET /login``, ``GET /callback`` and
+        ``POST /logout``.
 
         Include it in your FastAPI app::
 

@@ -1,4 +1,4 @@
-"""Integration tests — make_casdoor_router endpoints (callback + logout)."""
+"""Integration tests — make_casdoor_router endpoints."""
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
@@ -15,6 +15,12 @@ REFRESH_TOKEN = "header.payload.refresh"
 
 def _make_sdk(tokens: dict | None = None) -> MagicMock:
     sdk = MagicMock()
+    sdk.get_auth_link = AsyncMock(
+        return_value=(
+            "http://casdoor.example/login/oauth/authorize"
+            "?client_id=test&response_type=code"
+        )
+    )
     sdk.get_oauth_token = AsyncMock(
         return_value=(
             {"access_token": ACCESS_TOKEN, "refresh_token": REFRESH_TOKEN}
@@ -25,27 +31,51 @@ def _make_sdk(tokens: dict | None = None) -> MagicMock:
     return sdk
 
 
-def _make_app(sdk: MagicMock, **router_kwargs) -> FastAPI:  # type: ignore[return]
+def _make_app(
+    sdk: MagicMock, **router_kwargs
+) -> FastAPI:  # type: ignore[return]
     app = FastAPI()
     router = make_casdoor_router(sdk, **router_kwargs)
     app.include_router(router)
     return app
 
 
-# ---------------------------------------------------------------------------
-# GET /callback — happy path
-# ---------------------------------------------------------------------------
+async def _start_login(client: AsyncClient) -> tuple[str, str]:
+    login_resp = await client.get("/login", follow_redirects=False)
+    state_cookie = client.cookies.get("casdoor_oauth_state")
+    assert state_cookie is not None
+    assert login_resp.status_code == 302
+    assert "state=" in login_resp.headers["location"]
+    return state_cookie, login_resp.headers["location"]
+
+
+@pytest.mark.integration
+async def test_login_sets_state_cookie_and_redirects_to_casdoor() -> None:
+    app = _make_app(_make_sdk(), cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        state_cookie, location = await _start_login(client)
+    assert state_cookie
+    assert location.startswith("http://casdoor.example/login/oauth/authorize")
 
 
 @pytest.mark.integration
 async def test_callback_redirects_after_successful_token_exchange() -> None:
-    app = _make_app(_make_sdk(), redirect_after_login="/dashboard")
+    app = _make_app(
+        _make_sdk(),
+        redirect_after_login="/dashboard",
+        cookie_secure=False,
+    )
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
         follow_redirects=False,
     ) as client:
-        resp = await client.get("/callback", params={"code": "auth-code"})
+        state_cookie, _ = await _start_login(client)
+        resp = await client.get(
+            "/callback", params={"code": "auth-code", "state": state_cookie}
+        )
     assert resp.status_code == 302
     assert resp.headers["location"] == "/dashboard"
 
@@ -58,7 +88,10 @@ async def test_callback_sets_access_token_cookie() -> None:
         base_url="http://test",
         follow_redirects=False,
     ) as client:
-        resp = await client.get("/callback", params={"code": "auth-code"})
+        state_cookie, _ = await _start_login(client)
+        resp = await client.get(
+            "/callback", params={"code": "auth-code", "state": state_cookie}
+        )
     cookie_header = resp.headers.get("set-cookie", "")
     assert "access_token" in cookie_header
 
@@ -71,26 +104,13 @@ async def test_callback_sets_refresh_token_cookie() -> None:
         base_url="http://test",
         follow_redirects=False,
     ) as client:
-        resp = await client.get("/callback", params={"code": "auth-code"})
-    # RedirectResponse may set multiple Set-Cookie headers; check raw headers
+        state_cookie, _ = await _start_login(client)
+        resp = await client.get(
+            "/callback", params={"code": "auth-code", "state": state_cookie}
+        )
     all_headers = resp.headers.multi_items()
     set_cookies = [v for k, v in all_headers if k.lower() == "set-cookie"]
     assert any("refresh_token" in h for h in set_cookies)
-
-
-@pytest.mark.integration
-async def test_callback_accepts_state_param_without_error() -> None:
-    """state is accepted but not validated — must not cause 422."""
-    app = _make_app(_make_sdk(), cookie_secure=False)
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test",
-        follow_redirects=False,
-    ) as client:
-        resp = await client.get(
-            "/callback", params={"code": "auth-code", "state": "some-nonce"}
-        )
-    assert resp.status_code == 302
 
 
 @pytest.mark.integration
@@ -107,60 +127,89 @@ async def test_callback_custom_cookie_names() -> None:
         base_url="http://test",
         follow_redirects=False,
     ) as client:
-        resp = await client.get("/callback", params={"code": "auth-code"})
+        state_cookie, _ = await _start_login(client)
+        resp = await client.get(
+            "/callback", params={"code": "auth-code", "state": state_cookie}
+        )
     all_headers = resp.headers.multi_items()
     set_cookies = [v for k, v in all_headers if k.lower() == "set-cookie"]
     assert any("my_access" in h for h in set_cookies)
     assert any("my_refresh" in h for h in set_cookies)
 
 
-# ---------------------------------------------------------------------------
-# GET /callback — error cases
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.integration
-async def test_callback_returns_401_when_access_token_missing() -> None:
-    sdk = _make_sdk(tokens={"refresh_token": REFRESH_TOKEN})
-    app = _make_app(sdk)
+async def test_callback_returns_400_when_state_missing() -> None:
+    app = _make_app(_make_sdk(), cookie_secure=False)
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
         follow_redirects=False,
     ) as client:
         resp = await client.get("/callback", params={"code": "auth-code"})
+    assert resp.status_code == 400
+
+
+@pytest.mark.integration
+async def test_callback_returns_401_when_state_is_invalid() -> None:
+    app = _make_app(_make_sdk(), cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+        follow_redirects=False,
+    ) as client:
+        await _start_login(client)
+        resp = await client.get(
+            "/callback", params={"code": "auth-code", "state": "invalid-state"}
+        )
+    assert resp.status_code == 401
+
+
+@pytest.mark.integration
+async def test_callback_returns_401_when_access_token_missing() -> None:
+    sdk = _make_sdk(tokens={"refresh_token": REFRESH_TOKEN})
+    app = _make_app(sdk, cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+        follow_redirects=False,
+    ) as client:
+        state_cookie, _ = await _start_login(client)
+        resp = await client.get(
+            "/callback", params={"code": "auth-code", "state": state_cookie}
+        )
     assert resp.status_code == 401
 
 
 @pytest.mark.integration
 async def test_callback_returns_401_when_refresh_token_missing() -> None:
     sdk = _make_sdk(tokens={"access_token": ACCESS_TOKEN})
-    app = _make_app(sdk)
+    app = _make_app(sdk, cookie_secure=False)
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
         follow_redirects=False,
     ) as client:
-        resp = await client.get("/callback", params={"code": "auth-code"})
+        state_cookie, _ = await _start_login(client)
+        resp = await client.get(
+            "/callback", params={"code": "auth-code", "state": state_cookie}
+        )
     assert resp.status_code == 401
 
 
 @pytest.mark.integration
 async def test_callback_returns_401_when_tokens_dict_empty() -> None:
     sdk = _make_sdk(tokens={})
-    app = _make_app(sdk)
+    app = _make_app(sdk, cookie_secure=False)
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
         follow_redirects=False,
     ) as client:
-        resp = await client.get("/callback", params={"code": "auth-code"})
+        state_cookie, _ = await _start_login(client)
+        resp = await client.get(
+            "/callback", params={"code": "auth-code", "state": state_cookie}
+        )
     assert resp.status_code == 401
-
-
-# ---------------------------------------------------------------------------
-# POST /logout
-# ---------------------------------------------------------------------------
 
 
 @pytest.mark.integration
@@ -216,11 +265,6 @@ async def test_logout_with_custom_cookie_names() -> None:
     assert any("my_refresh" in h for h in set_cookies)
 
 
-# ---------------------------------------------------------------------------
-# Router prefix
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.integration
 async def test_router_prefix_applied() -> None:
     sdk = _make_sdk()
@@ -230,7 +274,15 @@ async def test_router_prefix_applied() -> None:
         base_url="http://test",
         follow_redirects=False,
     ) as client:
-        resp = await client.get("/auth/callback", params={"code": "auth-code"})
+        login_resp = await client.get("/auth/login")
+        state_cookie = client.cookies.get("casdoor_oauth_state")
+        assert state_cookie is not None
+        resp = await client.get(
+            "/auth/callback",
+            params={"code": "auth-code", "state": state_cookie},
+            follow_redirects=False,
+        )
+    assert login_resp.status_code == 302
     assert resp.status_code == 302
 
 

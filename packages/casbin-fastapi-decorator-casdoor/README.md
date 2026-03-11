@@ -30,7 +30,7 @@ casdoor = CasdoorIntegration(
 )
 
 app = FastAPI()
-app.include_router(casdoor.router)   # GET /callback, POST /logout
+app.include_router(casdoor.router)   # GET /login, GET /callback, POST /logout
 guard = casdoor.create_guard()
 
 @app.get("/protected")
@@ -118,6 +118,7 @@ Main facade. Accepts all Casdoor SDK parameters plus:
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `target` | required | :class:`CasdoorEnforceTarget` — which Casdoor API identifier to use |
+| `state_manager` | `CookieStateManager()` | OAuth `state` issuance/verification strategy |
 | `access_token_cookie` | `"access_token"` | Cookie name for the access token |
 | `refresh_token_cookie` | `"refresh_token"` | Cookie name for the refresh token |
 | `redirect_after_login` | `"/"` | Path or absolute URL to redirect after OAuth2 callback. Relative (`"/"`) stays on the same host; absolute (`"https://app.example.com/"`) redirects to another host. |
@@ -127,7 +128,7 @@ Main facade. Accepts all Casdoor SDK parameters plus:
 | `cookie_domain` | `None` | `Domain` attribute. Use `".example.com"` to share cookies across subdomains (e.g. `*.my-site.ru`) |
 | `cookie_path` | `"/"` | `Path` attribute of the cookie |
 | `cookie_max_age` | `None` | `Max-Age` in seconds; `None` = session cookie |
-| `router_prefix` | `""` | URL prefix for `/callback` and `/logout` |
+| `router_prefix` | `""` | URL prefix for `/login`, `/callback` and `/logout` |
 
 ### `CasdoorUserProvider`
 
@@ -151,13 +152,15 @@ FastAPI dependency that returns a shared `CasdoorEnforcer`.
 
 Factory that returns a `fastapi.APIRouter` with two endpoints:
 
-- `GET {prefix}/callback` — exchanges OAuth2 code for tokens, sets cookies
+- `GET {prefix}/login` — issues OAuth2 state and redirects to Casdoor
+- `GET {prefix}/callback` — validates state, exchanges OAuth2 code for tokens, sets cookies
 - `POST {prefix}/logout` — clears authentication cookies
 
-> **Security note — OAuth2 state / CSRF.**
-> The `state` query parameter sent by Casdoor is accepted but **not validated**.
-> This is an intentional trade-off for stateless deployments.
-> If your threat model requires CSRF protection, implement state validation
-> yourself: generate a nonce before redirecting to Casdoor, store it in a
-> short-lived cookie or session, and verify it in the callback handler before
-> exchanging the code.
+Default `state` protection is provided by `CookieStateManager`:
+
+- cookie name: `casdoor_oauth_state`
+- `HttpOnly=True`, `Secure=True`, `SameSite=lax`
+- `Max-Age=300`
+
+You can override state handling using `CasdoorStateManager` protocol
+implementation (e.g. Redis/session-backed storage).
