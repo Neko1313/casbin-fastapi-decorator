@@ -76,6 +76,7 @@ def test_router_property_returns_api_router() -> None:
 def test_router_has_callback_and_logout_routes() -> None:
     integration = _make_integration()
     paths = {route.path for route in integration.router.routes}  # type: ignore[attr-defined]
+    assert "/login" in paths
     assert "/callback" in paths
     assert "/logout" in paths
 
@@ -121,5 +122,6 @@ def test_router_prefix_applied_to_routes() -> None:
     # Route paths may include the prefix depending on FastAPI version;
     # verify both callback and logout routes exist under the prefix.
     paths = {route.path for route in integration.router.routes}  # type: ignore[attr-defined]
+    assert any("login" in p for p in paths)
     assert any("callback" in p for p in paths)
     assert any("logout" in p for p in paths)
