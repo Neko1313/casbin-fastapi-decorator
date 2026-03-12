@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from hmac import compare_digest
 from secrets import token_urlsafe
 from typing import TYPE_CHECKING, Literal, Protocol
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
@@ -73,7 +74,7 @@ class CookieStateManager:
     ) -> bool:
         expected_state = request.cookies.get(self._cookie_name)
         response.delete_cookie(key=self._cookie_name, **self._cookie_kwargs)
-        return bool(expected_state) and expected_state == state
+        return bool(expected_state) and compare_digest(expected_state, state)
 
 
 async def _build_auth_url(
