@@ -18,8 +18,8 @@ __all__ = [
     "CasdoorEnforcer",
     "CasdoorEnforcerProvider",
     "CasdoorIntegration",
-    "CasdoorUserProvider",
     "CasdoorStateManager",
+    "CasdoorUserProvider",
     "CookieStateManager",
     "make_casdoor_router",
 ]

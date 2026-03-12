@@ -146,8 +146,7 @@ class CasdoorIntegration:
     @property
     def router(self) -> APIRouter:
         """
-        :class:`APIRouter` with ``GET /login``, ``GET /callback`` and
-        ``POST /logout``.
+        :class:`APIRouter` with ``/login``, ``/callback`` and ``/logout``.
 
         Include it in your FastAPI app::
 

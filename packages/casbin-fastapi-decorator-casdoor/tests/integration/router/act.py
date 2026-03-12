@@ -138,7 +138,7 @@ async def test_callback_custom_cookie_names() -> None:
 
 
 @pytest.mark.integration
-async def test_callback_returns_400_when_state_missing() -> None:
+async def test_callback_returns_422_when_state_missing() -> None:
     app = _make_app(_make_sdk(), cookie_secure=False)
     async with AsyncClient(
         transport=ASGITransport(app=app),
@@ -146,11 +146,11 @@ async def test_callback_returns_400_when_state_missing() -> None:
         follow_redirects=False,
     ) as client:
         resp = await client.get("/callback", params={"code": "auth-code"})
-    assert resp.status_code == 400
+    assert resp.status_code == 422
 
 
 @pytest.mark.integration
-async def test_callback_returns_401_when_state_is_invalid() -> None:
+async def test_callback_returns_400_when_state_is_invalid() -> None:
     app = _make_app(_make_sdk(), cookie_secure=False)
     async with AsyncClient(
         transport=ASGITransport(app=app),
@@ -161,7 +161,7 @@ async def test_callback_returns_401_when_state_is_invalid() -> None:
         resp = await client.get(
             "/callback", params={"code": "auth-code", "state": "invalid-state"}
         )
-    assert resp.status_code == 401
+    assert resp.status_code == 400
 
 
 @pytest.mark.integration

@@ -34,7 +34,7 @@ class CasdoorStateManager(Protocol):
 class CookieStateManager:
     """Cookie-backed default implementation for OAuth ``state``."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         *,
         cookie_name: str = "casdoor_oauth_state",
@@ -139,6 +139,9 @@ def make_casdoor_router(  # noqa: PLR0913
     """
     router = APIRouter(prefix=prefix)
     state_manager_impl = state_manager or CookieStateManager(
+        cookie_secure=cookie_secure,
+        cookie_httponly=cookie_httponly,
+        cookie_samesite=cookie_samesite,
         cookie_domain=cookie_domain,
         cookie_path=cookie_path,
     )
@@ -153,25 +156,23 @@ def make_casdoor_router(  # noqa: PLR0913
 
     @router.get("/login")
     async def login(request: Request) -> RedirectResponse:
-        response = RedirectResponse(url=redirect_after_login)
-        state = await state_manager_impl.issue(response)
+        tmp = Response()
+        state = await state_manager_impl.issue(tmp)
         auth_url = await _build_auth_url(
             sdk,
             redirect_uri=str(request.url_for("callback")),
             state=state,
         )
-        response.headers["location"] = auth_url
+        response = RedirectResponse(url=auth_url, status_code=HTTP_302_FOUND)
+        response.raw_headers.extend(tmp.raw_headers)
         return response
 
     @router.get("/callback")
     async def callback(
         request: Request,
         code: str,
-        state: str | None = None,
+        state: str,
     ) -> RedirectResponse:
-        if not state:
-            raise HTTPException(status_code=HTTP_400_BAD_REQUEST)
-
         response = RedirectResponse(
             url=redirect_after_login,
             status_code=HTTP_302_FOUND,
@@ -182,10 +183,7 @@ def make_casdoor_router(  # noqa: PLR0913
             state=state,
         )
         if not is_valid_state:
-            return Response(
-                status_code=HTTP_401_UNAUTHORIZED,
-                headers=dict(response.headers),
-            )
+            raise HTTPException(status_code=HTTP_400_BAD_REQUEST)
 
         tokens = await sdk.get_oauth_token(code=code)
         if not tokens.get("access_token") or not tokens.get("refresh_token"):
