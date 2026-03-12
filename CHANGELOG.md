@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2026-03-12
+### Bug Fixes
+
+- **Casdoor**: fix(Casdoor): add OAuth2 state management and /login flow to Casdoor integration by @Neko1313 in [#16](https://github.com/Neko1313/casbin-fastapi-decorator/pull/16)
+
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v0.2.2...v0.2.3
 ## [0.2.2] - 2026-03-10
 ### Bug Fixes
 
