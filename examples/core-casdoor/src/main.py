@@ -1,15 +1,14 @@
 """Example: casbin-fastapi-decorator with Casdoor OAuth2 + remote enforcement."""
 from typing import Annotated
-from urllib.parse import urlencode
 
-from authz import _APP, _CLIENT_ID, _ENDPOINT, _ORG, casdoor, guard
+from authz import casdoor, guard
 from casdoor import AsyncCasdoorSDK
 from fastapi import Depends, FastAPI
 from model import ArticleCreateSchema, ArticleSchema, Permission, Resource
 
 app = FastAPI(title="Core + Casdoor Example")
 
-# Register GET /callback and POST /logout provided by the Casdoor integration.
+# Register GET /login, GET /callback and POST /logout provided by the integration.
 app.include_router(casdoor.router)
 
 # ---------------------------------------------------------------------------
@@ -28,23 +27,10 @@ MOCK_DB: list[ArticleSchema] = [
 
 @app.get("/")
 async def index() -> dict:
-    """Return the Casdoor login URL so the user knows where to start."""
-    params = urlencode(
-        {
-            "client_id": _CLIENT_ID,
-            "response_type": "code",
-            "redirect_uri": "http://localhost:8080/callback",
-            "scope": "read",
-            "state": "example",
-        }
-    )
-    login_url = (
-        f"{_ENDPOINT}/login/oauth/authorize?"
-        f"organizationName={_ORG}&applicationName={_APP}&{params}"
-    )
+    """Return a welcome message with a link to start the OAuth2 flow."""
     return {
         "message": "Log in via Casdoor to access protected endpoints.",
-        "login_url": login_url,
+        "login_url": "/login",
         "users": {
             "alice": {"password": "alice123", "can": ["read", "write"]},
             "bob": {"password": "bob123", "can": ["read"]},

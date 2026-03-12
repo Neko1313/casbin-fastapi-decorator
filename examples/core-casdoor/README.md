@@ -6,7 +6,8 @@ Full OAuth2 authentication and remote Casbin policy enforcement via
 ## What it demonstrates
 
 - `CasdoorIntegration` facade — one object wires the SDK, cookies, router, and guard
-- `GET /callback` — OAuth2 code exchange; issues `access_token` + `refresh_token` cookies
+- `GET /login` — issues OAuth2 state nonce and redirects to Casdoor
+- `GET /callback` — validates state, exchanges OAuth2 code for tokens, sets cookies
 - `POST /logout` — clears authentication cookies
 - `guard.require_permission(resource, action)` — delegates policy check to Casdoor's
   remote `/api/enforce` endpoint using the seeded ACL enforcer
@@ -50,16 +51,15 @@ uv run fastapi dev src/main.py --port 8080
 
 ### 3 — Try it (browser or curl)
 
-Open `http://localhost:8080/` to get the Casdoor login URL, then:
+Open `http://localhost:8080/login` in a browser to start the OAuth2 flow, then:
 
 ```bash
-# ── Step 1: get the login URL ────────────────────────────────────────────────
-curl -s http://localhost:8080/ | python3 -m json.tool
-
-# The response contains "login_url" — open it in a browser.
+# ── Step 1: open the login URL in a browser ───────────────────────────────────
+# Navigate to http://localhost:8080/login
+# The app issues a state nonce and redirects to Casdoor automatically.
 # Log in as alice / alice123.
-# Casdoor redirects to http://localhost:8080/callback?code=...
-# The app exchanges the code for tokens and sets cookies.
+# Casdoor redirects to http://localhost:8080/callback?code=...&state=...
+# The app validates the state and exchanges the code for tokens, then sets cookies.
 
 # ── Step 2: copy the cookies from the browser and use them below ─────────────
 ACCESS=<paste access_token cookie value>
@@ -92,8 +92,9 @@ curl -s -X POST http://localhost:8080/logout \
 
 | Method | Path | Auth | Permission | Description |
 |---|---|---|---|---|
-| `GET` | `/` | public | — | Returns Casdoor login URL |
-| `GET` | `/callback` | public | — | OAuth2 callback; sets cookies |
+| `GET` | `/` | public | — | Welcome message with link to `/login` |
+| `GET` | `/login` | public | — | Issues state nonce, redirects to Casdoor |
+| `GET` | `/callback` | public | — | Validates state, exchanges code, sets cookies |
 | `POST` | `/logout` | public | — | Clears cookies |
 | `GET` | `/me` | required | — | Returns decoded JWT payload |
 | `GET` | `/articles` | required | `articles:read` | List articles |
@@ -140,6 +141,6 @@ Casdoor upserts the data on startup (existing records are updated, new ones crea
 |---|---|---|
 | `401 Invalid token` | Wrong certificate in `authz.py` | Must match `cert-example` in `init_data.json` |
 | `403 Forbidden` for alice | Enforcer not loaded yet | Restart Casdoor; check permissions in admin panel |
-| `404` on `/callback` | Router not included | `app.include_router(casdoor.router)` |
+| `404` on `/login` or `/callback` | Router not included | `app.include_router(casdoor.router)` |
 | Login page shows wrong app | Wrong `org_name` / `app_name` | Must match `example-org` / `app-example` |
 | Casdoor not ready | MySQL still initialising | Wait 20 s, retry `curl http://localhost:8000/` |
