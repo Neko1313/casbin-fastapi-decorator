@@ -98,10 +98,11 @@ tasks:
     requires:
       vars: [VERSION]
     cmds:
-      - uv version {{.VERSION}}
-      - uv version {{.VERSION}} --package casbin-fastapi-decorator-jwt
-      - uv version {{.VERSION}} --package casbin-fastapi-decorator-db
-      - uv version {{.VERSION}} --package casbin-fastapi-decorator-casdoor
+      - uv version {{.VERSION}} --frozen
+      - uv version {{.VERSION}} --package casbin-fastapi-decorator-jwt --frozen
+      - uv version {{.VERSION}} --package casbin-fastapi-decorator-db --frozen
+      - uv version {{.VERSION}} --package casbin-fastapi-decorator-casdoor --frozen
+      - uv lock
 
   release:changelog:
     desc: Generate CHANGELOG.md (requires TAG=vX.Y.Z)
@@ -120,6 +121,7 @@ tasks:
                 packages/casbin-fastapi-decorator-jwt/pyproject.toml \
                 packages/casbin-fastapi-decorator-db/pyproject.toml \
                 packages/casbin-fastapi-decorator-casdoor/pyproject.toml \
+                uv.lock \
                 CHANGELOG.md
         git commit -m "chore(release): {{.TAG}}"
         git tag -a "{{.TAG}}" -m "Release {{.TAG}}"
