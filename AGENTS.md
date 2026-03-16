@@ -68,6 +68,46 @@ Pytest markers: `unit`, `integration`, `permission_guard`, `access_subject` — 
 
 The DB package tests require Docker (testcontainers-postgres).
 
+## Enforcer Provider Design Principle: Singleton + Async Context Manager
+
+All enforcer providers that manage internal state (cached enforcer, file watcher, background
+tasks) **must** follow the singleton provider pattern:
+
+1. **Singleton instance** — the provider is created once at module level (or app startup)
+   and reused across all requests.  Never create a new provider per-request.
+2. **Caching** — the `casbin.Enforcer` is built once on the first `__call__` and cached
+   in `self._enforcer`.  Subsequent calls return the cached instance.
+3. **`asyncio.Lock` with double-checked locking** — prevents concurrent reloads when
+   multiple requests trigger a stale check simultaneously:
+   ```python
+   if self._needs_reload or self._enforcer is None:
+       async with self._lock:
+           if self._needs_reload or self._enforcer is None:
+               await self._reload()
+   ```
+4. **Async context manager for lifecycle** — file watchers and background polling tasks
+   are started in `__aenter__` and stopped in `__aexit__`.  Users wire this into the
+   FastAPI `lifespan`:
+   ```python
+   @asynccontextmanager
+   async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+       async with enforcer_provider:
+           yield
+   ```
+5. **Thread-safe dirty flag** — watchdog callbacks run in a background thread and set
+   `self._needs_reload = True`.  This is safe because CPython's GIL makes boolean
+   assignment atomic.  Never acquire `asyncio.Lock` from a watchdog callback.
+6. **Blocking I/O in thread pool** — `casbin.Enforcer(...)` reads files from disk;
+   always run it via `asyncio.to_thread(...)` to avoid blocking the event loop.
+
+### Provider-specific reload triggers
+
+| Package | File watch | Background poll |
+|---|---|---|
+| `casbin-fastapi-decorator-file` | `model.conf` + `policy.csv` (watchdog) | — |
+| `casbin-fastapi-decorator-db` | `model.conf` only (watchdog) | DB hash every `poll_interval` s |
+| `casbin-fastapi-decorator-casdoor` | — | — (remote API, always fresh) |
+
 ## Sub-package Development
 
-Each package under `packages/` has its own `pyproject.toml` and task definitions (referenced as `task jwt:lint`, `task db:lint`, etc.). They reference the core package as a workspace dependency.
+Each package under `packages/` has its own `pyproject.toml` and task definitions (referenced as `task jwt:lint`, `task db:lint`, `task file:lint`, etc.). They reference the core package as a workspace dependency.

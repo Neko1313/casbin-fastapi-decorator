@@ -46,5 +46,9 @@ select = [
 [lint.per-file-ignores]
 "tests/**" = [
     "ANN", "D", "PLR2004", "ARG001", "E501",
-    "S105", "B008",
+    "S105", "B008", "ASYNC240",
+]
+"packages/**/tests/**" = [
+    "ANN", "D", "PLR2004", "ARG001", "E501",
+    "S105", "B008", "ASYNC240",
 ]

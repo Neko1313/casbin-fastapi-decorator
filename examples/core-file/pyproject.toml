@@ -1,7 +1,7 @@
 [project]
-name = "core"
+name = "core-file"
 version = "0.1.0"
-description = "Casbin Fastapi Decorator Core Example"
+description = "casbin-fastapi-decorator file provider with hot-reload example"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

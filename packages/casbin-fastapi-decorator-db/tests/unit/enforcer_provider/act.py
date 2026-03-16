@@ -1,4 +1,4 @@
-"""Unit tests — DatabaseEnforcerProvider.__call__ behaviour (mocked session, no real DB)."""
+"""Unit tests — DatabaseEnforcerProvider caching behaviour (mocked session, no real DB)."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -214,7 +214,10 @@ async def test_session_context_manager_entered_and_exited(
 @pytest.mark.unit
 @pytest.mark.db_provider
 @patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
-async def test_each_call_returns_new_enforcer(mock_select: MagicMock, model_path: Path) -> None:
+async def test_returns_same_cached_enforcer_on_subsequent_calls(
+    mock_select: MagicMock, model_path: Path
+) -> None:
+    """After the first call the enforcer is cached — same object returned."""
     provider = DatabaseEnforcerProvider(
         model_path=model_path,
         session_factory=_make_session([]),
@@ -224,4 +227,84 @@ async def test_each_call_returns_new_enforcer(mock_select: MagicMock, model_path
     e1 = await provider()
     e2 = await provider()
 
+    assert e1 is e2
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+@patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
+async def test_db_queried_only_once_without_dirty(
+    mock_select: MagicMock, model_path: Path
+) -> None:
+    """Session factory is called once; subsequent calls hit the cache."""
+    session_factory = _make_session([])
+    provider = DatabaseEnforcerProvider(
+        model_path=model_path,
+        session_factory=session_factory,
+        policy_model=PolicyRow,
+        policy_mapper=lambda p: (p.sub, p.obj, p.act),
+    )
+    await provider()
+    await provider()
+    await provider()
+
+    session_factory.return_value.__aenter__.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+@patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
+async def test_mark_dirty_triggers_reload_on_next_call(
+    mock_select: MagicMock, model_path: Path
+) -> None:
+    session_factory = _make_session([])
+    provider = DatabaseEnforcerProvider(
+        model_path=model_path,
+        session_factory=session_factory,
+        policy_model=PolicyRow,
+        policy_mapper=lambda p: (p.sub, p.obj, p.act),
+    )
+    e1 = await provider()
+    provider._mark_dirty()
+    e2 = await provider()
+
     assert e1 is not e2
+    assert session_factory.return_value.__aenter__.await_count == 2
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+def test_compute_hash_order_independent() -> None:
+    """Same policies in different order must produce the same hash."""
+    policies_a = [("alice", "data", "read"), ("bob", "data", "write")]
+    policies_b = [("bob", "data", "write"), ("alice", "data", "read")]
+
+    assert DatabaseEnforcerProvider._compute_hash(policies_a) == \
+           DatabaseEnforcerProvider._compute_hash(policies_b)
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+def test_compute_hash_differs_for_different_policies() -> None:
+    policies_a = [("alice", "data", "read")]
+    policies_b = [("alice", "data", "write")]
+
+    assert DatabaseEnforcerProvider._compute_hash(policies_a) != \
+           DatabaseEnforcerProvider._compute_hash(policies_b)
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+@patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
+async def test_needs_reload_false_after_first_call(
+    mock_select: MagicMock, model_path: Path
+) -> None:
+    provider = DatabaseEnforcerProvider(
+        model_path=model_path,
+        session_factory=_make_session([]),
+        policy_model=PolicyRow,
+        policy_mapper=lambda p: (p.sub, p.obj, p.act),
+    )
+    assert provider._needs_reload is True
+    await provider()
+    assert provider._needs_reload is False

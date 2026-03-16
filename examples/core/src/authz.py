@@ -1,19 +1,29 @@
-"""Authorization Guard."""
+"""Authorization guard with hot-reload via CachedFileEnforcerProvider."""
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
 from auth import get_current_user
-from casbin import Enforcer
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
 
 from casbin_fastapi_decorator import PermissionGuard
+from casbin_fastapi_decorator_file import CachedFileEnforcerProvider
+
+# Single instance — loaded once, reloaded automatically when files change.
+enforcer_provider = CachedFileEnforcerProvider(
+    model_path="casbin/model.conf",
+    policy_path="casbin/policy.csv",
+)
 
 
-async def get_enforcer() -> Enforcer:
-    """Get enforcer."""
-    return Enforcer("casbin/model.conf", "casbin/policy.csv")
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Start the file watcher on startup; stop it on shutdown."""
+    async with enforcer_provider:
+        yield
+
 
 guard = PermissionGuard(
     user_provider=get_current_user,
-    enforcer_provider=get_enforcer,
-    error_factory=lambda *_ : HTTPException(
-        403, "Forbidden"
-    ),
+    enforcer_provider=enforcer_provider,
+    error_factory=lambda *_: HTTPException(403, "Forbidden"),
 )

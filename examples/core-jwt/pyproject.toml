@@ -8,9 +8,11 @@ dependencies = [
     "fastapi[standard]>=0.128.6",
     "casbin-fastapi-decorator",
     "casbin-fastapi-decorator-jwt",
+    "casbin-fastapi-decorator-file",
     "pyjwt>=2.0.0",
 ]
 
 [tool.uv.sources]
 casbin-fastapi-decorator = { workspace = true }
 casbin-fastapi-decorator-jwt = { workspace = true }
+casbin-fastapi-decorator-file = { workspace = true }

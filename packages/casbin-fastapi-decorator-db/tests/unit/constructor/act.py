@@ -34,7 +34,7 @@ def test_model_path_str_converted_to_path() -> None:
         policy_mapper=_mapper,
     )
     assert isinstance(provider._model_path, Path)
-    assert provider._model_path == Path("path/to/model.conf")
+    assert provider._model_path == Path("path/to/model.conf").resolve()
 
 
 @pytest.mark.unit

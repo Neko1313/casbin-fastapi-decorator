@@ -1,11 +1,13 @@
-"""Example using casbin-fastapi-decorator with DB-backed policies."""
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+"""Example: casbin-fastapi-decorator with CachedFileEnforcerProvider.
+
+Demonstrates hot-reload: edit casbin/policy.csv while the app is running
+and permission changes take effect on the next request — no restart needed.
+"""
+from pathlib import Path
 from typing import Annotated
 
 from auth import get_current_user
-from authz import enforcer_provider, guard
-from db import Policy, async_session, engine, setup_db
+from authz import guard, lifespan
 from fastapi import Depends, FastAPI, Form
 from model import (
     Permission,
@@ -15,18 +17,8 @@ from model import (
     Role,
     UserSchema,
 )
-from sqlalchemy import select
 
-@asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Initialize DB, start enforcer watchdog and polling on startup."""
-    await setup_db()
-    async with enforcer_provider:
-        yield
-    await engine.dispose()
-
-
-app = FastAPI(title="Core + DB Example", lifespan=lifespan)
+app = FastAPI(title="Core + File Hot-Reload Example", lifespan=lifespan)
 
 MOCK_DB = [
     PostSchema(id=1, title="First Post"),
@@ -34,9 +26,11 @@ MOCK_DB = [
 ]
 
 
+# --- Auth ---
+
 @app.post("/login")
 async def login(role: Role) -> str:
-    """Log user in."""
+    """Return the role string as a Bearer token (demo only)."""
     return role
 
 
@@ -49,10 +43,12 @@ async def me(
     return user
 
 
+# --- Posts ---
+
 @app.get("/articles")
 @guard.require_permission(Resource.POST, Permission.READ)
 async def list_posts() -> list[PostSchema]:
-    """List all posts."""
+    """List all posts (requires post:read)."""
     return MOCK_DB
 
 
@@ -75,10 +71,10 @@ async def delete_post(post_id: int) -> dict:
     return {"id": post_id, "deleted": True}
 
 
-@app.get("/policies")
-async def list_policies() -> list[dict]:
-    """View all policies from the database."""
-    async with async_session() as session:
-        result = await session.execute(select(Policy))
-        policies = result.scalars().all()
-    return [{"sub": p.sub, "obj": p.obj, "act": p.act} for p in policies]
+# --- Hot-reload demo ---
+
+@app.get("/policy")
+async def current_policy() -> dict:
+    """Show the current contents of policy.csv (for demo purposes)."""
+    policy_path = Path("casbin/policy.csv")
+    return {"policy": policy_path.read_text()}

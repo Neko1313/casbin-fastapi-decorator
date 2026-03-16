@@ -7,6 +7,8 @@ includes:
     taskfile: packages/casbin-fastapi-decorator-jwt/Taskfile.yaml
   casdoor:
     taskfile: packages/casbin-fastapi-decorator-casdoor/Taskfile.yaml
+  file:
+    taskfile: packages/casbin-fastapi-decorator-file/Taskfile.yaml
 
 tasks:
   install:
@@ -64,6 +66,7 @@ tasks:
       - db:lint
       - jwt:lint
       - casdoor:lint
+      - file:lint
 
   tests:
     desc: Run tests for core + all packages
@@ -72,6 +75,7 @@ tasks:
       - db:test
       - jwt:test
       - casdoor:test
+      - file:test
 
   # ---------------------------------------------------------------------------
   # Release
@@ -102,6 +106,7 @@ tasks:
       - uv version {{.VERSION}} --package casbin-fastapi-decorator-jwt --frozen
       - uv version {{.VERSION}} --package casbin-fastapi-decorator-db --frozen
       - uv version {{.VERSION}} --package casbin-fastapi-decorator-casdoor --frozen
+      - uv version {{.VERSION}} --package casbin-fastapi-decorator-file --frozen
       - uv lock
 
   release:changelog:
@@ -121,6 +126,7 @@ tasks:
                 packages/casbin-fastapi-decorator-jwt/pyproject.toml \
                 packages/casbin-fastapi-decorator-db/pyproject.toml \
                 packages/casbin-fastapi-decorator-casdoor/pyproject.toml \
+                packages/casbin-fastapi-decorator-file/pyproject.toml \
                 uv.lock \
                 CHANGELOG.md
         git commit -m "chore(release): {{.TAG}}"
@@ -142,6 +148,7 @@ tasks:
       - uv build --package casbin-fastapi-decorator-jwt
       - uv build --package casbin-fastapi-decorator-db
       - uv build --package casbin-fastapi-decorator-casdoor
+      - uv build --package casbin-fastapi-decorator-file
       - uv publish
 
   release:github:

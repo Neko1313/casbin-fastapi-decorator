@@ -2,7 +2,7 @@
 from typing import Annotated
 
 from auth import get_current_user
-from authz import guard
+from authz import guard, lifespan
 from fastapi import Depends, FastAPI, Form
 from model import (
     Permission,
@@ -13,9 +13,7 @@ from model import (
     UserSchema,
 )
 
-app = FastAPI(
-    title="Core Example",
-)
+app = FastAPI(title="Core Example", lifespan=lifespan)
 
 MOCK_DB = [
     PostSchema(
