@@ -696,12 +696,14 @@ version = "0.1.0"
 source = { virtual = "examples/core" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },
+    { name = "casbin-fastapi-decorator-file" },
     { name = "fastapi", extra = ["standard"] },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "casbin-fastapi-decorator", editable = "." },
+    { name = "casbin-fastapi-decorator-file", editable = "packages/casbin-fastapi-decorator-file" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.128.6" },
 ]
 
@@ -764,6 +766,7 @@ version = "0.1.0"
 source = { virtual = "examples/core-jwt" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },
+    { name = "casbin-fastapi-decorator-file" },
     { name = "casbin-fastapi-decorator-jwt" },
     { name = "fastapi", extra = ["standard"] },
     { name = "pyjwt" },
@@ -772,6 +775,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "casbin-fastapi-decorator", editable = "." },
+    { name = "casbin-fastapi-decorator-file", editable = "packages/casbin-fastapi-decorator-file" },
     { name = "casbin-fastapi-decorator-jwt", editable = "packages/casbin-fastapi-decorator-jwt" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.128.6" },
     { name = "pyjwt", specifier = ">=2.0.0" },

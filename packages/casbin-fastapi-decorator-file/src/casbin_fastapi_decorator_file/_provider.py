@@ -39,6 +39,11 @@ class _FileChangeHandler(FileSystemEventHandler):
         if dest and not event.is_directory and dest in self._paths:
             self._callback()
 
+    def on_deleted(self, event: FileSystemEvent) -> None:
+        """Handle file deletion event."""
+        if not event.is_directory and event.src_path in self._paths:
+            self._callback()
+
 
 class CachedFileEnforcerProvider:
     """

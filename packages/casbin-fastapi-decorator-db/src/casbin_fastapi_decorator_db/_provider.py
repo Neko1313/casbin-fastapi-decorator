@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import hashlib
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -15,6 +16,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 
 class _ModelFileHandler(FileSystemEventHandler):
@@ -38,6 +41,11 @@ class _ModelFileHandler(FileSystemEventHandler):
         """Handle atomic rename (temp-file write) event."""
         dest = getattr(event, "dest_path", None)
         if dest and not event.is_directory and dest == self._model_path:
+            self._callback()
+
+    def on_deleted(self, event: FileSystemEvent) -> None:
+        """Handle file deletion event."""
+        if not event.is_directory and event.src_path == self._model_path:
             self._callback()
 
 
@@ -145,14 +153,14 @@ class DatabaseEnforcerProvider:
         """Background task: detect DB policy changes by hashing all rows."""
         while True:
             await asyncio.sleep(self._poll_interval)
-            with contextlib.suppress(Exception):
-                # Transient DB errors must not crash the background task
-                policies = await self._fetch_policies()
-                new_hash = self._compute_hash(policies)
-                if new_hash != self._db_hash:
-                    async with self._lock:
-                        if new_hash != self._db_hash:
-                            await self._reload(policies)
+            try:
+                async with self._lock:
+                    policies = await self._fetch_policies()
+                    new_hash = self._compute_hash(policies)
+                    if new_hash != self._db_hash:
+                        await self._reload(policies)
+            except Exception:  # pylint: disable=broad-except
+                logger.exception("Error in casbin DB policy poll loop")
 
     async def __aenter__(self) -> DatabaseEnforcerProvider:
         """Perform the initial load, start file watcher and DB poll task."""

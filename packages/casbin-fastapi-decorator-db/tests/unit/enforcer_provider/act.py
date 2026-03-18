@@ -1,13 +1,18 @@
 """Unit tests — DatabaseEnforcerProvider caching behaviour (mocked session, no real DB)."""
 from __future__ import annotations
 
+import asyncio
+import contextlib
 from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import casbin
 import pytest
 
-from casbin_fastapi_decorator_db import DatabaseEnforcerProvider
+from casbin_fastapi_decorator_db._provider import (
+    DatabaseEnforcerProvider,
+    _ModelFileHandler,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -308,3 +313,69 @@ async def test_needs_reload_false_after_first_call(
     assert provider._needs_reload is True
     await provider()
     assert provider._needs_reload is False
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+def test_model_file_handler_on_created(model_path: Path) -> None:
+    callback = MagicMock()
+    handler = _ModelFileHandler(str(model_path), callback)
+    event = MagicMock()
+    event.is_directory = False
+    event.src_path = str(model_path)
+
+    handler.on_created(event)
+    callback.assert_called_once()
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+def test_model_file_handler_on_moved(model_path: Path) -> None:
+    callback = MagicMock()
+    handler = _ModelFileHandler(str(model_path), callback)
+    event = MagicMock()
+    event.is_directory = False
+    event.dest_path = str(model_path)
+
+    handler.on_moved(event)
+    callback.assert_called_once()
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+def test_model_file_handler_on_deleted(model_path: Path) -> None:
+    callback = MagicMock()
+    handler = _ModelFileHandler(str(model_path), callback)
+    event = MagicMock()
+    event.is_directory = False
+    event.src_path = str(model_path)
+
+    handler.on_deleted(event)
+    callback.assert_called_once()
+
+
+@pytest.mark.unit
+@pytest.mark.db_provider
+@patch("casbin_fastapi_decorator_db._provider.select", return_value=MagicMock())
+async def test_poll_loop_handles_exception(mock_select: MagicMock, model_path: Path) -> None:
+    """_poll_loop should not crash on DB errors."""
+    session_factory = MagicMock()
+    session_factory.return_value.__aenter__ = AsyncMock(side_effect=Exception("DB down"))
+
+    provider = DatabaseEnforcerProvider(
+        model_path=model_path,
+        session_factory=session_factory,
+        policy_model=PolicyRow,
+        policy_mapper=lambda p: (p.sub, p.obj, p.act),
+        poll_interval=0.01,
+    )
+    # We don't start the actual loop but call it once manually or mock sleep
+    with (
+        patch("asyncio.sleep", side_effect=[None, asyncio.CancelledError]),
+        contextlib.suppress(asyncio.CancelledError),
+    ):
+        await provider._poll_loop()
+
+    # If it reached here without crashing the provider, it works.
+    # The first call to _fetch_policies inside _poll_loop failed,
+    # and the loop continued (until our CancelledError).
