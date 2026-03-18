@@ -1,6 +1,7 @@
 """Integration tests — DatabaseEnforcerProvider against a real PostgreSQL container."""
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 import pytest
@@ -12,7 +13,6 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-    pass
 
 _RBAC_MODEL = """\
 [request_definition]
@@ -30,6 +30,8 @@ e = some(where (p.eft == allow))
 [matchers]
 m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act
 """
+
+_WATCHDOG_SETTLE = 0.5  # seconds to wait for watchdog to detect file changes
 
 
 @pytest.fixture
@@ -49,7 +51,6 @@ async def test_enforcer_loads_policies_from_real_db(
     db_session_factory: async_sessionmaker[AsyncSession],
     model_path: Path,
 ) -> None:
-    # ── Seed data ──────────────────────────────────────────────────────
     async with db_session_factory() as session:
         session.add_all([
             PolicyModel(sub="alice", obj="docs", act="read"),
@@ -58,7 +59,6 @@ async def test_enforcer_loads_policies_from_real_db(
         ])
         await session.commit()
 
-    # ── Act ────────────────────────────────────────────────────────────
     provider = DatabaseEnforcerProvider(
         model_path=model_path,
         session_factory=db_session_factory,
@@ -67,12 +67,11 @@ async def test_enforcer_loads_policies_from_real_db(
     )
     enforcer = await provider()
 
-    # ── Assert ─────────────────────────────────────────────────────────
     assert enforcer.enforce("alice", "docs", "read") is True
     assert enforcer.enforce("bob", "docs", "write") is True
     assert enforcer.enforce("carol", "reports", "read") is True
-    assert enforcer.enforce("alice", "docs", "write") is False   # not granted
-    assert enforcer.enforce("dave", "docs", "read") is False     # unknown user
+    assert enforcer.enforce("alice", "docs", "write") is False
+    assert enforcer.enforce("dave", "docs", "read") is False
 
 
 @pytest.mark.integration
@@ -81,12 +80,10 @@ async def test_default_policies_merged_with_db_policies(
     db_session_factory: async_sessionmaker[AsyncSession],
     model_path: Path,
 ) -> None:
-    # ── Seed data ──────────────────────────────────────────────────────
     async with db_session_factory() as session:
         session.add(PolicyModel(sub="bob", obj="data2", act="write"))
         await session.commit()
 
-    # ── Act ────────────────────────────────────────────────────────────
     provider = DatabaseEnforcerProvider(
         model_path=model_path,
         session_factory=db_session_factory,
@@ -96,10 +93,9 @@ async def test_default_policies_merged_with_db_policies(
     )
     enforcer = await provider()
 
-    # ── Assert ─────────────────────────────────────────────────────────
     assert enforcer.enforce("alice", "data1", "read") is True    # default
     assert enforcer.enforce("bob", "data2", "write") is True     # from DB
-    assert enforcer.enforce("alice", "data2", "write") is False  # not granted
+    assert enforcer.enforce("alice", "data2", "write") is False
 
 
 @pytest.mark.integration
@@ -108,7 +104,6 @@ async def test_empty_table_returns_working_enforcer(
     db_session_factory: async_sessionmaker[AsyncSession],
     model_path: Path,
 ) -> None:
-    """Provider works correctly even when the policy table has no rows."""
     provider = DatabaseEnforcerProvider(
         model_path=model_path,
         session_factory=db_session_factory,
@@ -122,30 +117,109 @@ async def test_empty_table_returns_working_enforcer(
 
 @pytest.mark.integration
 @pytest.mark.db_provider
-async def test_each_provider_call_sees_latest_db_state(
+async def test_second_call_returns_cached_enforcer(
     db_session_factory: async_sessionmaker[AsyncSession],
     model_path: Path,
 ) -> None:
-    """Each __call__ re-queries the DB, so new rows are picked up."""
+    """Enforcer is cached — both calls return the same object."""
     provider = DatabaseEnforcerProvider(
         model_path=model_path,
         session_factory=db_session_factory,
         policy_model=PolicyModel,
         policy_mapper=_mapper,
     )
+    e1 = await provider()
+    e2 = await provider()
 
-    # First call — table empty
-    enforcer1 = await provider()
-    assert enforcer1.enforce("alice", "docs", "read") is False
+    assert e1 is e2
 
-    # Add a policy row
+
+@pytest.mark.integration
+@pytest.mark.db_provider
+async def test_db_change_detected_after_poll(
+    db_session_factory: async_sessionmaker[AsyncSession],
+    model_path: Path,
+) -> None:
+    """Inserting a new policy row is picked up after poll_interval elapses."""
+    provider = DatabaseEnforcerProvider(
+        model_path=model_path,
+        session_factory=db_session_factory,
+        policy_model=PolicyModel,
+        policy_mapper=_mapper,
+        poll_interval=0.1,
+    )
+
+    async with provider:
+        enforcer_before = await provider()
+        assert enforcer_before.enforce("alice", "docs", "read") is False
+
+        # Insert a new policy row while the provider is running
+        async with db_session_factory() as session:
+            session.add(PolicyModel(sub="alice", obj="docs", act="read"))
+            await session.commit()
+
+        # Wait for at least one poll cycle to complete
+        await asyncio.sleep(0.4)
+
+        enforcer_after = await provider()
+        assert enforcer_after.enforce("alice", "docs", "read") is True
+        assert enforcer_before is not enforcer_after
+
+
+@pytest.mark.integration
+@pytest.mark.db_provider
+async def test_model_conf_change_picked_up_by_watchdog(
+    db_session_factory: async_sessionmaker[AsyncSession],
+    model_path: Path,
+) -> None:
+    """Overwriting model.conf causes the enforcer to reload on next call."""
     async with db_session_factory() as session:
         session.add(PolicyModel(sub="alice", obj="docs", act="read"))
         await session.commit()
 
-    # Second call — should see the new row
-    enforcer2 = await provider()
-    assert enforcer2.enforce("alice", "docs", "read") is True
+    provider = DatabaseEnforcerProvider(
+        model_path=model_path,
+        session_factory=db_session_factory,
+        policy_model=PolicyModel,
+        policy_mapper=_mapper,
+        poll_interval=3600.0,  # disable polling — only watchdog should trigger
+    )
 
-    # Enforcers are independent objects
-    assert enforcer1 is not enforcer2
+    async with provider:
+        e1 = await provider()
+        assert e1.enforce("alice", "docs", "read") is True
+
+        # Overwrite model.conf with an always-deny matcher (sub must be "nobody")
+        deny_model = _RBAC_MODEL.replace(
+            "m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act",
+            'm = r.sub == "nobody"',
+        )
+        model_path.write_text(deny_model)  # noqa: ASYNC240
+        await asyncio.sleep(_WATCHDOG_SETTLE)
+
+        # Next call must reload with the new model
+        e2 = await provider()
+        assert e1 is not e2
+        assert e2.enforce("alice", "docs", "read") is False
+
+
+@pytest.mark.integration
+@pytest.mark.db_provider
+async def test_poll_task_cancelled_on_aexit(
+    db_session_factory: async_sessionmaker[AsyncSession],
+    model_path: Path,
+) -> None:
+    provider = DatabaseEnforcerProvider(
+        model_path=model_path,
+        session_factory=db_session_factory,
+        policy_model=PolicyModel,
+        policy_mapper=_mapper,
+        poll_interval=3600.0,
+    )
+
+    async with provider:
+        assert provider._poll_task is not None
+        assert not provider._poll_task.done()
+
+    assert provider._poll_task is None
+    assert provider._observer is None

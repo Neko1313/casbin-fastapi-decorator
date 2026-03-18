@@ -3,7 +3,7 @@ from typing import Annotated
 
 import jwt
 from auth import ALGORITHM, SECRET_KEY, user_provider
-from authz import guard
+from authz import guard, lifespan
 from fastapi import Depends, FastAPI, Form
 from model import (
     Permission,
@@ -14,7 +14,7 @@ from model import (
     UserSchema,
 )
 
-app = FastAPI(title="Core + JWT Example")
+app = FastAPI(title="Core + JWT Example", lifespan=lifespan)
 
 MOCK_DB = [
     PostSchema(id=1, title="First Post"),

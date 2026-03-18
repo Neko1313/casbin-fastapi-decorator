@@ -1,8 +1,4 @@
 """Database setup and models."""
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI
 from model import Permission, Resource, Role
 from sqlalchemy import String, select
 from sqlalchemy.ext.asyncio import (
@@ -52,11 +48,8 @@ async def seed_policies() -> None:
         await session.commit()
 
 
-@asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Initialize the database and seed policies on startup."""
+async def setup_db() -> None:
+    """Create tables and seed policies."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     await seed_policies()
-    yield
-    await engine.dispose()
