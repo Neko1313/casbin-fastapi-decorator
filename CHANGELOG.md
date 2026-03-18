@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2026-03-18
+### Features
+
+- **Core**: feat(Core)!: add casbin-fastapi-decorator-file + enforcer caching with hot-reload by @Neko1313 in [#17](https://github.com/Neko1313/casbin-fastapi-decorator/pull/17)
+> **BREAKING CHANGE**: add casbin-fastapi-decorator-file + enforcer caching with hot-reload (#17)
+
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v0.2.3...v1.0.0
 ## [0.2.3] - 2026-03-12
 ### Bug Fixes
 
