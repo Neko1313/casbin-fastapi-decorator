@@ -62,7 +62,7 @@ jobs:
         run: task core:test CI=true
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: reports/coverage.xml
@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload test analytics to Codecov
         if: always()
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: reports/junit.xml
