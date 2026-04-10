@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-04-10
+### Features
+
+- **core**: allow per-route permission error factories
+
+
+### New Contributors
+
+- @ made their first contribution
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v1.0.0...v1.1.0
 ## [1.0.0] - 2026-03-18
 ### Features
 
