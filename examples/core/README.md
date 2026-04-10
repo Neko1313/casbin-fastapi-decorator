@@ -7,6 +7,7 @@ Minimal example using only `casbin-fastapi-decorator` with file-based Casbin pol
 - Bearer token = role (simplest auth for demo, no JWT)
 - `auth_required()` — authentication-only guard
 - `require_permission(Resource, Permission)` — static permission check with enums
+- Route-level `error_factory` override for a custom denial response
 
 ## Casbin setup
 
@@ -27,6 +28,7 @@ uv run fastapi dev src/main.py
 | GET    | `/me`       | auth only    | Returns current user  |
 | GET    | `/articles` | `post:read`  | List all posts        |
 | POST   | `/articles` | `post:write` | Create a post         |
+| GET    | `/articles/draft` | `post:write` | Returns draft with route-specific denial |
 
 ## Try it
 
@@ -46,9 +48,13 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
   -d '{"title": "New post"}' \
   http://localhost:8000/articles
 
+# Route-level error_factory — admin is allowed
+curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/articles/draft    # 200
+
 # Try viewer — read allowed, write denied
 TOKEN_VIEW=$(curl -s -X POST "http://localhost:8000/login?role=viewer" | jq -r '.')
 curl -H "Authorization: Bearer $TOKEN_VIEW" http://localhost:8000/articles          # 200
+curl -H "Authorization: Bearer $TOKEN_VIEW" http://localhost:8000/articles/draft    # 404
 curl -X POST -H "Authorization: Bearer $TOKEN_VIEW" \
   -H "Content-Type: application/json" \
   -d '{"title": "New post"}' \

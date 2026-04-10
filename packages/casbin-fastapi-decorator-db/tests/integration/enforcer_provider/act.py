@@ -194,7 +194,7 @@ async def test_model_conf_change_picked_up_by_watchdog(
             "m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act",
             'm = r.sub == "nobody"',
         )
-        model_path.write_text(deny_model)  # noqa: ASYNC240
+        await asyncio.to_thread(model_path.write_text, deny_model)
         await asyncio.sleep(_WATCHDOG_SETTLE)
 
         # Next call must reload with the new model

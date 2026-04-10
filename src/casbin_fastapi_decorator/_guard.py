@@ -42,7 +42,11 @@ class PermissionGuard:
         """Return an authentication-only decorator."""
         return build_auth_decorator(self._user_provider)
 
-    def require_permission(self, *args: AccessSubject | Any) -> Callable:
+    def require_permission(
+        self,
+        *args: AccessSubject | Any,
+        error_factory: Callable[..., Exception] | None = None,
+    ) -> Callable:
         """
         Return a permission-check decorator.
 
@@ -51,10 +55,15 @@ class PermissionGuard:
         in the same order. ``AccessSubject`` values are
         resolved via FastAPI DI and transformed with
         their selector. Other values are passed as-is.
+        ``error_factory`` overrides the guard-level factory
+        for this decorator only.
         """
+        if error_factory is None:
+            error_factory = self._error_factory
+
         return build_permission_decorator(
             user_provider=self._user_provider,
             enforcer_provider=self._enforcer_provider,
-            error_factory=self._error_factory,
+            error_factory=error_factory,
             args=args,
         )

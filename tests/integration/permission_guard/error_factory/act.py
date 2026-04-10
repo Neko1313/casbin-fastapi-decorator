@@ -92,6 +92,39 @@ async def test_custom_error_status_code() -> None:
 
 @pytest.mark.integration
 @pytest.mark.permission_guard
+async def test_route_error_factory_overrides_guard_default() -> None:
+    def default_error(user: Any, *rvals: Any) -> HTTPException:
+        return HTTPException(status_code=403, detail="Forbidden")
+
+    def route_error(user: Any, *rvals: Any) -> HTTPException:
+        return HTTPException(status_code=409, detail="Route override")
+
+    enf = _SyncEnforcer(allow=False)
+    guard = PermissionGuard(
+        user_provider=_user(),
+        enforcer_provider=_enforcer(enf),
+        error_factory=default_error,
+    )
+    app = FastAPI()
+
+    @app.get("/route-override")
+    @guard.require_permission(
+        "secret",
+        "access",
+        error_factory=route_error,
+    )
+    async def route() -> dict:
+        return {"ok": True}
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/route-override")
+
+    assert resp.status_code == 409
+    assert resp.json() == {"detail": "Route override"}
+
+
+@pytest.mark.integration
+@pytest.mark.permission_guard
 async def test_route_return_value_passed_through() -> None:
     def _forbidden(user: Any, *rvals: Any) -> HTTPException:
         return HTTPException(status_code=403, detail="Forbidden")

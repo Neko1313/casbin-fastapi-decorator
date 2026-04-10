@@ -3,7 +3,7 @@ from typing import Annotated
 
 from auth import get_current_user
 from authz import guard, lifespan
-from fastapi import Depends, FastAPI, Form
+from fastapi import Depends, FastAPI, Form, HTTPException
 from model import (
     Permission,
     PostCreatSchema,
@@ -25,6 +25,15 @@ MOCK_DB = [
         title="Second Post",
     ),
 ]
+
+
+def article_not_found_error(
+    _user: UserSchema,
+    *_rvals: object,
+) -> HTTPException:
+    """Return a route-specific error for denied draft access."""
+    return HTTPException(status_code=404, detail="Article not found")
+
 
 # --- Routes ---
 
@@ -49,6 +58,17 @@ async def list_post() -> list[PostSchema]:
     return MOCK_DB
 
 
+@app.get("/articles/draft")
+@guard.require_permission(
+    Resource.POST,
+    Permission.WRITE,
+    error_factory=article_not_found_error,
+)
+async def read_draft() -> dict[str, str]:
+    """Return draft post with route-specific denial error."""
+    return {"title": "Draft Post"}
+
+
 @app.post("/articles")
 @guard.require_permission(Resource.POST, Permission.WRITE)
 async def create_article(
@@ -62,4 +82,3 @@ async def create_article(
     )
     MOCK_DB.append(model)
     return model
-

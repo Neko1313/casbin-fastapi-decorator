@@ -119,6 +119,57 @@ def test_require_permission_can_decorate_async_function(guard: PermissionGuard) 
 
 @pytest.mark.unit
 @pytest.mark.permission_guard
+def test_require_permission_uses_guard_error_factory_by_default(
+    guard: PermissionGuard,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, Any] = {}
+
+    def build_stub(**kwargs: Any) -> Any:
+        captured.update(kwargs)
+        return lambda func: func
+
+    monkeypatch.setattr(
+        "casbin_fastapi_decorator._guard.build_permission_decorator",
+        build_stub,
+    )
+
+    guard.require_permission("resource", "read")
+
+    assert captured["error_factory"] is _error_factory
+
+
+@pytest.mark.unit
+@pytest.mark.permission_guard
+def test_require_permission_accepts_route_error_factory(
+    guard: PermissionGuard,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, Any] = {}
+
+    def route_error_factory(user: Any, *rvals: Any) -> HTTPException:
+        return HTTPException(status_code=404, detail="Not found")
+
+    def build_stub(**kwargs: Any) -> Any:
+        captured.update(kwargs)
+        return lambda func: func
+
+    monkeypatch.setattr(
+        "casbin_fastapi_decorator._guard.build_permission_decorator",
+        build_stub,
+    )
+
+    guard.require_permission(
+        "resource",
+        "read",
+        error_factory=route_error_factory,
+    )
+
+    assert captured["error_factory"] is route_error_factory
+
+
+@pytest.mark.unit
+@pytest.mark.permission_guard
 def test_multiple_guards_are_independent() -> None:
     async def user_a() -> dict:
         return {"sub": "alice"}
