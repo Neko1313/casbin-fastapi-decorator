@@ -127,7 +127,7 @@ PermissionGuard(
 | Method | Description |
 |---|---|
 | `auth_required()` | Decorator: authentication only (user_provider must not raise) |
-| `require_permission(*args)` | Decorator: permission check via `enforcer.enforce(user, *args)` |
+| `require_permission(*args, error_factory=None)` | Decorator: permission check via `enforcer.enforce(user, *args)`. Optional `error_factory` overrides the guard-level factory for this route only. |
 
 ### `AccessSubject`
 
@@ -139,6 +139,26 @@ AccessSubject(
 ```
 
 Wraps a dependency whose value is resolved from the request and passed to the enforcer. By default, `selector` is identity (`lambda x: x`).
+
+### Per-route error responses
+
+Override the guard-level `error_factory` on specific routes to customize error handling:
+
+```python
+def article_not_found_error(user, *resolved_args) -> HTTPException:
+    """Return 404 instead of 403 for denied access."""
+    return HTTPException(status_code=404, detail="Article not found")
+
+@app.get("/articles/draft")
+@guard.require_permission(
+    "article", "write",
+    error_factory=article_not_found_error,
+)
+async def read_draft():
+    return {"title": "Draft Article"}
+```
+
+When a user without write permission accesses this route, they'll receive a `404 Not Found` instead of the default `403 Forbidden`, effectively hiding the resource's existence.
 
 ## File provider
 
