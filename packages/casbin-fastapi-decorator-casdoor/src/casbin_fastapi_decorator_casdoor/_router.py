@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from hmac import compare_digest
 from secrets import token_urlsafe
-from typing import TYPE_CHECKING, Literal, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
-from fastapi import APIRouter, HTTPException, Request
+import jwt
+from fastapi import APIRouter, HTTPException, Request, Security
 from fastapi.responses import RedirectResponse, Response
+from fastapi.security import APIKeyCookie
 from starlette.status import (
     HTTP_302_FOUND,
     HTTP_400_BAD_REQUEST,
@@ -111,8 +113,9 @@ def make_casdoor_router(  # noqa: PLR0913
     Routes:
 
     - ``GET {prefix}/login`` — Start OAuth2 login and redirect to Casdoor.
-    - ``GET {prefix}/callback`` — Exchange OAuth2 code for tokens, set cookies.
-    - ``POST {prefix}/logout`` — Clear authentication cookies.
+    - ``GET {prefix}/callback`` — Exchange OAuth2 code for tokens.
+    - ``POST {prefix}/logout`` — Revoke tokens and clear cookies.
+    - ``GET {prefix}/me`` — Retrieve current user's profile.
 
     Args:
         sdk: Configured :class:`AsyncCasdoorSDK` instance.
@@ -154,6 +157,13 @@ def make_casdoor_router(  # noqa: PLR0913
         "domain": cookie_domain,
         "path": cookie_path,
     }
+
+    _access_cookie_scheme = APIKeyCookie(
+        name=access_token_cookie, auto_error=False
+    )
+    _refresh_cookie_scheme = APIKeyCookie(
+        name=refresh_token_cookie, auto_error=False
+    )
 
     @router.get("/login")
     async def login(request: Request) -> RedirectResponse:
@@ -203,8 +213,27 @@ def make_casdoor_router(  # noqa: PLR0913
         return response
 
     @router.post("/logout")
-    async def logout(response: Response) -> None:
+    async def logout(
+        response: Response,
+        refresh_token: str | None = Security(_refresh_cookie_scheme),
+    ) -> None:
+        if refresh_token:
+            await sdk.oauth_token_revoke(refresh_token, "refresh_token")
         for key in (access_token_cookie, refresh_token_cookie):
             response.delete_cookie(key=key, **_cookie_kwargs)
+
+    @router.get("/me")
+    async def me(
+        access_token: str | None = Security(_access_cookie_scheme),
+    ) -> dict[str, Any]:
+        if access_token is None:
+            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED)
+        try:
+            return sdk.parse_jwt_token(access_token)
+        except (ValueError, jwt.PyJWTError) as e:
+            raise HTTPException(
+                status_code=HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid token: {e}",
+            ) from e
 
     return router

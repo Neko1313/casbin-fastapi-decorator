@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
+import jwt as pyjwt
 import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
@@ -28,6 +29,10 @@ def _make_sdk(tokens: dict | None = None) -> MagicMock:
             else tokens
         )
     )
+    sdk.parse_jwt_token = MagicMock(
+        return_value={"owner": "org", "name": "user1"}
+    )
+    sdk.oauth_token_revoke = AsyncMock()
     return sdk
 
 
@@ -295,3 +300,95 @@ async def test_callback_without_prefix_returns_404_when_prefix_set() -> None:
     ) as client:
         resp = await client.get("/callback", params={"code": "auth-code"})
     assert resp.status_code == 404
+
+
+@pytest.mark.integration
+async def test_logout_revokes_token_on_casdoor() -> None:
+    sdk = _make_sdk()
+    app = _make_app(sdk, cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        client.cookies.set("refresh_token", REFRESH_TOKEN)
+        resp = await client.post("/logout")
+    assert resp.status_code == 200
+    sdk.oauth_token_revoke.assert_called_once_with(REFRESH_TOKEN, "refresh_token")
+
+
+@pytest.mark.integration
+async def test_logout_without_refresh_token_does_not_call_revoke() -> None:
+    sdk = _make_sdk()
+    app = _make_app(sdk, cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        resp = await client.post("/logout")
+    assert resp.status_code == 200
+    sdk.oauth_token_revoke.assert_not_called()
+
+
+@pytest.mark.integration
+async def test_me_returns_user_profile() -> None:
+    sdk = _make_sdk()
+    app = _make_app(sdk, cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        client.cookies.set("access_token", ACCESS_TOKEN)
+        resp = await client.get("/me")
+    assert resp.status_code == 200
+    assert resp.json() == {"owner": "org", "name": "user1"}
+
+
+@pytest.mark.integration
+async def test_me_returns_401_when_no_access_token() -> None:
+    sdk = _make_sdk()
+    app = _make_app(sdk, cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        resp = await client.get("/me")
+    assert resp.status_code == 401
+
+
+@pytest.mark.integration
+async def test_me_returns_401_on_invalid_token() -> None:
+    sdk = _make_sdk()
+    sdk.parse_jwt_token.side_effect = pyjwt.PyJWTError("Invalid signature")
+    app = _make_app(sdk, cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        client.cookies.set("access_token", "invalid.token.here")
+        resp = await client.get("/me")
+    assert resp.status_code == 401
+
+
+@pytest.mark.integration
+async def test_me_with_custom_cookie_name() -> None:
+    sdk = _make_sdk()
+    app = _make_app(
+        sdk,
+        access_token_cookie="my_access",
+        cookie_secure=False,
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        client.cookies.set("my_access", ACCESS_TOKEN)
+        resp = await client.get("/me")
+    assert resp.status_code == 200
+    assert resp.json() == {"owner": "org", "name": "user1"}
+
+
+@pytest.mark.integration
+async def test_me_with_prefix() -> None:
+    sdk = _make_sdk()
+    app = _make_app(sdk, prefix="/auth", cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        client.cookies.set("access_token", ACCESS_TOKEN)
+        resp = await client.get("/auth/me")
+    assert resp.status_code == 200
+    assert resp.json() == {"owner": "org", "name": "user1"}
