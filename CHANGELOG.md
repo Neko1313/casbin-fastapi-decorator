@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2026-04-25
+### Bug Fixes
+
+- **casdoor**: replace token revoke with SSO logout by @Neko1313
+
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v1.2.0...v1.2.1
 ## [1.2.0] - 2026-04-25
 ### Documentation
 
