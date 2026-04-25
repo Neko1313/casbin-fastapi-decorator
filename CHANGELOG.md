@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Features
+
+- **Casdoor**: add Casdoor-side token revocation in `/logout` endpoint
+- **Casdoor**: add `GET /me` endpoint to retrieve current user's profile
+
 ## [1.1.0] - 2026-04-10
 ### Features
 
