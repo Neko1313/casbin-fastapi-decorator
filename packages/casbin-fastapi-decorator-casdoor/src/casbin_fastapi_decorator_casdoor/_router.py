@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import asyncio
+import json
 from hmac import compare_digest
 from secrets import token_urlsafe
 from typing import TYPE_CHECKING, Any, Literal, Protocol
-from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+from urllib import request as urlrequest
+from urllib.error import HTTPError, URLError
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
 import jwt
 from fastapi import APIRouter, HTTPException, Request, Security
@@ -13,6 +17,7 @@ from starlette.status import (
     HTTP_302_FOUND,
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
+    HTTP_502_BAD_GATEWAY,
 )
 
 if TYPE_CHECKING:
@@ -92,6 +97,80 @@ async def _build_auth_url(
     return urlunparse(parsed._replace(query=urlencode(query_params)))
 
 
+def _read_casdoor_error(response_body: bytes) -> str:
+    try:
+        payload = json.loads(response_body.decode())
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return "Casdoor SSO logout request failed"
+    if not isinstance(payload, dict):
+        return "Casdoor SSO logout request failed"
+    msg = payload.get("msg")
+    return msg if isinstance(msg, str) and msg else "Casdoor SSO logout failed"
+
+
+def _request_sso_logout(
+    *,
+    endpoint: str,
+    access_token: str,
+    logout_all: bool,
+) -> dict[str, Any]:
+    logout_url = urljoin(f"{endpoint.rstrip('/')}/", "api/sso-logout")
+    query = urlencode({"logoutAll": "true" if logout_all else "false"})
+    request = urlrequest.Request(  # noqa: S310
+        url=f"{logout_url}?{query}",
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urlrequest.urlopen(  # noqa: S310  # nosec B310
+            request,
+            timeout=10,
+        ) as response:
+            body = response.read()
+    except HTTPError as e:
+        return {"status": "error", "msg": _read_casdoor_error(e.read())}
+    if not body:
+        return {}
+    payload = json.loads(body.decode())
+    if not isinstance(payload, dict):
+        msg = "Casdoor SSO logout returned an invalid response"
+        raise ValueError(msg)
+    return payload
+
+
+async def _logout_from_casdoor(
+    sdk: AsyncCasdoorSDK,
+    access_token: str,
+    *,
+    logout_all: bool = True,
+) -> str | None:
+    try:
+        payload = await asyncio.to_thread(
+            _request_sso_logout,
+            endpoint=sdk.endpoint,
+            access_token=access_token,
+            logout_all=logout_all,
+        )
+    except (
+        TimeoutError,
+        URLError,
+        OSError,
+        UnicodeDecodeError,
+        ValueError,
+        json.JSONDecodeError,
+    ):
+        return "Casdoor SSO logout request failed"
+
+    if payload.get("status") == "ok":
+        return None
+
+    msg = payload.get("msg")
+    return msg if isinstance(msg, str) and msg else "Casdoor SSO logout failed"
+
+
 def make_casdoor_router(  # noqa: PLR0913
     sdk: AsyncCasdoorSDK,
     *,
@@ -114,7 +193,8 @@ def make_casdoor_router(  # noqa: PLR0913
 
     - ``GET {prefix}/login`` — Start OAuth2 login and redirect to Casdoor.
     - ``GET {prefix}/callback`` — Exchange OAuth2 code for tokens.
-    - ``POST {prefix}/logout`` — Revoke tokens and clear cookies.
+    - ``POST {prefix}/logout`` — Trigger Casdoor SSO logout and clear
+      cookies.
     - ``GET {prefix}/me`` — Retrieve current user's profile.
 
     Args:
@@ -215,12 +295,17 @@ def make_casdoor_router(  # noqa: PLR0913
     @router.post("/logout")
     async def logout(
         response: Response,
-        refresh_token: str | None = Security(_refresh_cookie_scheme),
-    ) -> None:
-        if refresh_token:
-            await sdk.oauth_token_revoke(refresh_token, "refresh_token")
+        access_token: str | None = Security(_access_cookie_scheme),
+    ) -> dict[str, str] | None:
+        error_detail = None
+        if access_token:
+            error_detail = await _logout_from_casdoor(sdk, access_token)
         for key in (access_token_cookie, refresh_token_cookie):
             response.delete_cookie(key=key, **_cookie_kwargs)
+        if error_detail is not None:
+            response.status_code = HTTP_502_BAD_GATEWAY
+            return {"detail": error_detail}
+        return None
 
     @router.get("/me")
     async def me(

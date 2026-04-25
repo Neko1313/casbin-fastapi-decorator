@@ -254,11 +254,15 @@ casdoor = CasdoorIntegration(
         enforce_id=lambda parsed: f"{parsed['owner']}/my_enforcer",
     ),
 )
-app.include_router(casdoor.router)   # GET /callback, POST /logout
+app.include_router(casdoor.router)   # GET /login, GET /callback, POST /logout
 guard = casdoor.create_guard()
 ```
 
 `CasdoorEnforceTarget` selects the Casdoor enforce mode — by enforcer, permission, model, resource, or owner. Values can be static strings or callables resolved from the JWT payload at request time.
+
+`POST /logout` calls Casdoor's SSO logout endpoint
+(`/api/sso-logout?logoutAll=true`) when an access-token cookie is present,
+then clears local auth cookies.
 
 See [packages/casbin-fastapi-decorator-casdoor/README.md](packages/casbin-fastapi-decorator-casdoor/README.md) for full API, compose pattern, and usage.
 

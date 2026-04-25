@@ -14,8 +14,46 @@ ACCESS_TOKEN = "header.payload.access"
 REFRESH_TOKEN = "header.payload.refresh"
 
 
+class _FakeUrlopenResponse:
+    def __init__(self, body: bytes) -> None:
+        self._body = body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        return None
+
+    def read(self) -> bytes:
+        return self._body
+
+
+def _patch_sso_logout(monkeypatch, body: bytes | None = None):
+    calls = []
+
+    def urlopen(request, timeout):
+        calls.append(
+            {
+                "url": request.full_url,
+                "authorization": request.get_header("Authorization"),
+                "accept": request.get_header("Accept"),
+                "timeout": timeout,
+            }
+        )
+        return _FakeUrlopenResponse(
+            body or b'{"status":"ok","msg":"","data":""}'
+        )
+
+    monkeypatch.setattr(
+        "casbin_fastapi_decorator_casdoor._router.urlrequest.urlopen",
+        urlopen,
+    )
+    return calls
+
+
 def _make_sdk(tokens: dict | None = None) -> MagicMock:
     sdk = MagicMock()
+    sdk.endpoint = "http://casdoor.example"
     sdk.get_auth_link = AsyncMock(
         return_value=(
             "http://casdoor.example/login/oauth/authorize"
@@ -32,7 +70,6 @@ def _make_sdk(tokens: dict | None = None) -> MagicMock:
     sdk.parse_jwt_token = MagicMock(
         return_value={"owner": "org", "name": "user1"}
     )
-    sdk.oauth_token_revoke = AsyncMock()
     return sdk
 
 
@@ -303,28 +340,67 @@ async def test_callback_without_prefix_returns_404_when_prefix_set() -> None:
 
 
 @pytest.mark.integration
-async def test_logout_revokes_token_on_casdoor() -> None:
+async def test_logout_calls_casdoor_sso_logout(monkeypatch) -> None:
     sdk = _make_sdk()
+    calls = _patch_sso_logout(monkeypatch)
     app = _make_app(sdk, cookie_secure=False)
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
-        client.cookies.set("refresh_token", REFRESH_TOKEN)
+        client.cookies.set("access_token", ACCESS_TOKEN)
         resp = await client.post("/logout")
     assert resp.status_code == 200
-    sdk.oauth_token_revoke.assert_called_once_with(REFRESH_TOKEN, "refresh_token")
+    assert calls == [
+        {
+            "url": "http://casdoor.example/api/sso-logout?logoutAll=true",
+            "authorization": f"Bearer {ACCESS_TOKEN}",
+            "accept": "application/json",
+            "timeout": 10,
+        }
+    ]
 
 
 @pytest.mark.integration
-async def test_logout_without_refresh_token_does_not_call_revoke() -> None:
+async def test_logout_without_access_token_does_not_call_casdoor(
+    monkeypatch,
+) -> None:
     sdk = _make_sdk()
+
+    def urlopen(*args, **kwargs):
+        msg = "Casdoor SSO logout should not be called"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(
+        "casbin_fastapi_decorator_casdoor._router.urlrequest.urlopen",
+        urlopen,
+    )
     app = _make_app(sdk, cookie_secure=False)
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
         resp = await client.post("/logout")
     assert resp.status_code == 200
-    sdk.oauth_token_revoke.assert_not_called()
+
+
+@pytest.mark.integration
+async def test_logout_clears_cookies_when_casdoor_sso_logout_fails(
+    monkeypatch,
+) -> None:
+    sdk = _make_sdk()
+    _patch_sso_logout(monkeypatch, b'{"status":"error","msg":"token expired"}')
+    app = _make_app(sdk, cookie_secure=False)
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        client.cookies.set("access_token", ACCESS_TOKEN)
+        client.cookies.set("refresh_token", REFRESH_TOKEN)
+        resp = await client.post("/logout")
+    assert resp.status_code == 502
+    assert resp.json() == {"detail": "token expired"}
+    all_headers = resp.headers.multi_items()
+    set_cookies = [v for k, v in all_headers if k.lower() == "set-cookie"]
+    assert any("access_token" in h for h in set_cookies)
+    assert any("refresh_token" in h for h in set_cookies)
 
 
 @pytest.mark.integration

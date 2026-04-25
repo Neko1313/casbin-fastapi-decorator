@@ -150,11 +150,13 @@ FastAPI dependency that returns a shared `CasdoorEnforcer`.
 
 ### `make_casdoor_router`
 
-Factory that returns a `fastapi.APIRouter` with two endpoints:
+Factory that returns a `fastapi.APIRouter` with these endpoints:
 
 - `GET {prefix}/login` — issues OAuth2 state and redirects to Casdoor
 - `GET {prefix}/callback` — validates state, exchanges OAuth2 code for tokens, sets cookies
-- `POST {prefix}/logout` — clears authentication cookies
+- `POST {prefix}/logout` — calls Casdoor SSO logout
+  (`/api/sso-logout?logoutAll=true`) when an access-token cookie is present,
+  then clears authentication cookies
 
 Default `state` protection is provided by `CookieStateManager`:
 
