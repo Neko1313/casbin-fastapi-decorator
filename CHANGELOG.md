@@ -2,12 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.2.0] - 2026-04-25
+### Documentation
+
+- **README**: docs(README): Document per-route error_factory feature by @Neko1313 in [#22](https://github.com/Neko1313/casbin-fastapi-decorator/pull/22)
+
 ### Features
 
-- **Casdoor**: add Casdoor-side token revocation in `/logout` endpoint
-- **Casdoor**: add `GET /me` endpoint to retrieve current user's profile
+- **casdoor**: fix(Casdoor): Add token revocation and user profile endpoint to Casdoor router by @Neko1313 in [#24](https://github.com/Neko1313/casbin-fastapi-decorator/pull/24)
 
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v1.1.0...v1.2.0
 ## [1.1.0] - 2026-04-10
 ### Features
 
