@@ -157,6 +157,7 @@ Factory that returns a `fastapi.APIRouter` with these endpoints:
 - `POST {prefix}/logout` — calls Casdoor SSO logout
   (`/api/sso-logout?logoutAll=true`) when an access-token cookie is present,
   then clears authentication cookies
+- `GET {prefix}/me` — returns the current user's profile by parsing the JWT access token
 
 Default `state` protection is provided by `CookieStateManager`:
 
