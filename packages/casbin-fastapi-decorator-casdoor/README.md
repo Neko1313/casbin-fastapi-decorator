@@ -30,7 +30,7 @@ casdoor = CasdoorIntegration(
 )
 
 app = FastAPI()
-app.include_router(casdoor.router)   # GET /login, GET /callback, POST /logout
+app.include_router(casdoor.router)   # GET /login, GET /callback, GET /me, POST /logout
 guard = casdoor.create_guard()
 
 @app.get("/protected")
