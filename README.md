@@ -254,7 +254,7 @@ casdoor = CasdoorIntegration(
         enforce_id=lambda parsed: f"{parsed['owner']}/my_enforcer",
     ),
 )
-app.include_router(casdoor.router)   # GET /login, GET /callback, POST /logout
+app.include_router(casdoor.router)   # GET /login, GET /callback, GET /me, POST /logout
 guard = casdoor.create_guard()
 ```
 
@@ -263,6 +263,9 @@ guard = casdoor.create_guard()
 `POST /logout` calls Casdoor's SSO logout endpoint
 (`/api/sso-logout?logoutAll=true`) when an access-token cookie is present,
 then clears local auth cookies.
+
+`GET /me` returns the current user's profile by parsing the JWT access token
+(returns 401 if no valid token is present).
 
 See [packages/casbin-fastapi-decorator-casdoor/README.md](packages/casbin-fastapi-decorator-casdoor/README.md) for full API, compose pattern, and usage.
 
