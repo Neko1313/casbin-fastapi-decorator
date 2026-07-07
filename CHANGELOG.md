@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] - 2026-07-07
+### Bug Fixes
+
+- **core**: fix(core): support stacking multiple require_permission() decorators by @Neko1313 in [#28](https://github.com/Neko1313/casbin-fastapi-decorator/pull/28)
+
+### Documentation
+
+- **casdoor**: Document new GET /me endpoint for user profile retrieval by @Neko1313 in [#25](https://github.com/Neko1313/casbin-fastapi-decorator/pull/25)
+
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v1.2.1...v1.2.2
 ## [1.2.1] - 2026-04-25
 ### Bug Fixes
 
