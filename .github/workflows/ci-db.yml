@@ -61,7 +61,7 @@ jobs:
         run: task db:test CI=true
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: packages/casbin-fastapi-decorator-db/reports/coverage.xml
@@ -70,7 +70,7 @@ jobs:
 
       - name: Upload test analytics to Codecov
         if: always()
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: packages/casbin-fastapi-decorator-db/reports/junit.xml
