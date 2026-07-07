@@ -2,6 +2,7 @@ from collections.abc import Callable
 from functools import wraps
 from inspect import isawaitable
 from typing import Any
+from uuid import uuid4
 
 from fastapi import Depends
 from fastapi_decorators import depends
@@ -27,26 +28,41 @@ def build_permission_decorator(
     Resolved values are passed to
     ``enforcer.enforce(user, *rvals)``
     in the same order as *args*.
+
+    Dependency parameter names are namespaced with a
+    per-call token so that stacking multiple decorators
+    (e.g. several ``require_permission()`` calls on one
+    route) does not collide on shared kwarg names.
     """
+    token = uuid4().hex
+    user_key = f"__fguard_{token}_user__"
+    enforcer_key = f"__fguard_{token}_enforcer__"
+
     depends_kwargs: dict[str, Any] = {
-        "__fguard_user__": Depends(user_provider),
-        "__fguard_enforcer__": Depends(enforcer_provider),
+        user_key: Depends(user_provider),
+        enforcer_key: Depends(enforcer_provider),
     }
+    arg_keys: list[str | None] = []
     for i, arg in enumerate(args):
         if isinstance(arg, AccessSubject):
-            depends_kwargs[f"__fguard_{i}__"] = Depends(arg.val)
+            key = f"__fguard_{token}_{i}__"
+            depends_kwargs[key] = Depends(arg.val)
+            arg_keys.append(key)
+        else:
+            arg_keys.append(None)
 
     def decorator(func: "Callable") -> "Callable":
         @depends(**depends_kwargs)
         @wraps(func)
         async def wrapper(*fn_args: Any, **kw: Any) -> Any:
-            user = kw.pop("__fguard_user__")
-            enforcer = kw.pop("__fguard_enforcer__")
+            user = kw.pop(user_key)
+            enforcer = kw.pop(enforcer_key)
 
             rvals: list[Any] = []
             for i, arg in enumerate(args):
-                if isinstance(arg, AccessSubject):
-                    raw = kw.pop(f"__fguard_{i}__")
+                arg_key = arg_keys[i]
+                if arg_key is not None:
+                    raw = kw.pop(arg_key)
                     rvals.append(arg.selector(raw))
                 else:
                     rvals.append(arg)
