@@ -36,6 +36,30 @@ Decorators are applied directly to routes — no middleware, no extra parameters
 
 Middleware-based authorization checks every incoming request globally. With a decorator, you configure permissions exactly where the route is defined — no hidden side effects, no boilerplate dependencies in every function signature.
 
+### Performance
+
+That difference is measurable. Mean latency per request, same Casbin model and policy for every library, 1000 policy rules ([full results](benchmarks/RESULTS.md), [methodology](benchmarks/README.md)):
+
+| route | **decorator** | fastapi-authz | fastapi-casbin-auth |
+|---|---:|---:|---:|
+| unprotected (`/health`) | **19 µs** (1.0x) | 1237 µs (65x) | 1123 µs (59x) |
+| authenticated only (`auth_required()`) | **45 µs** (2.1x) | 1214 µs (58x) | 1105 µs (53x) |
+| permission check, allowed | 1283 µs (61x) | 1233 µs (59x) | 1104 µs (52x) |
+
+Multipliers are against the same app with no authorization at all.
+
+Routes you don't decorate cost nothing, and `auth_required()` never touches the enforcer — so both stay flat as the policy grows. Middleware runs `enforce()` on every request, including health checks and public endpoints, so its floor rises with every policy rule you add. On routes that genuinely do check a permission, the decorator is slightly slower: resolving FastAPI dependencies costs ~40-80 µs more than reading `scope["user"]`.
+
+Where that balance tips depends on how much of your traffic needs no authorization:
+
+| policy rules | unprotected traffic needed for the decorator to win |
+|---:|---:|
+| 10 | 46-50% |
+| 100 | 20-26% |
+| 1000 | 5-15% |
+
+Reproduce with `task bench:run`.
+
 ## Installation
 
 ```bash

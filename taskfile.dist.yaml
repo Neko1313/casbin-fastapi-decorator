@@ -9,6 +9,8 @@ includes:
     taskfile: packages/casbin-fastapi-decorator-casdoor/Taskfile.yaml
   file:
     taskfile: packages/casbin-fastapi-decorator-file/Taskfile.yaml
+  bench:
+    taskfile: benchmarks/Taskfile.yaml
 
 tasks:
   install:
@@ -67,6 +69,7 @@ tasks:
       - jwt:lint
       - casdoor:lint
       - file:lint
+      - bench:lint
 
   tests:
     desc: Run tests for core + all packages
