@@ -15,7 +15,7 @@ async def _dep() -> dict:
 def test_frozen_dataclass_raises_on_reassign() -> None:
     subject = AccessSubject(val=_dep)
     with pytest.raises(AttributeError):
-        subject.val = None  # type: ignore[misc]
+        subject.val = None  # ty: ignore[invalid-assignment]
 
 
 @pytest.mark.unit
@@ -23,7 +23,7 @@ def test_frozen_dataclass_raises_on_reassign() -> None:
 def test_frozen_selector_raises_on_reassign() -> None:
     subject = AccessSubject(val=_dep)
     with pytest.raises(AttributeError):
-        subject.selector = lambda x: x  # type: ignore[misc]
+        subject.selector = lambda x: x  # ty: ignore[invalid-assignment]
 
 
 @pytest.mark.unit
@@ -33,4 +33,4 @@ def test_slots_no_arbitrary_attributes() -> None:
     # Python 3.13 raises TypeError instead of AttributeError
     subject = AccessSubject(val=_dep)
     with pytest.raises((AttributeError, TypeError)):
-        subject.nonexistent = "value"  # type: ignore[attr-defined]
+        subject.nonexistent = "value"  # ty: ignore[invalid-assignment]

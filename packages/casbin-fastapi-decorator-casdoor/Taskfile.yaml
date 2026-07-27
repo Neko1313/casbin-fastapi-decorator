@@ -19,6 +19,11 @@ tasks:
         fi
 
   test:
+    env:
+      # Each suite gets its own coverage DB; `task tests`
+      # runs them in parallel and they would otherwise all write
+      # to the same .coverage file in the repo root.
+      COVERAGE_FILE: "{{.TASKFILE_DIR}}/.coverage"
     desc: Run Casdoor package tests (use CI=true for reports)
     cmds:
       - |

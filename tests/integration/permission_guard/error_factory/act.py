@@ -180,5 +180,6 @@ async def test_enforce_called_with_correct_user() -> None:
         resp = await client.get("/resource")
 
     assert resp.status_code == 200
-    user_arg, *_ = enf.last_call  # type: ignore[misc]
+    assert enf.last_call is not None
+    user_arg, *_ = enf.last_call
     assert user_arg == custom_user
