@@ -1,0 +1,17 @@
+version: "3"
+
+tasks:
+  run:
+    desc: Run the full benchmark sweep and regenerate RESULTS.md
+    cmds:
+      - uv run --no-project --script {{.TASKFILE_DIR}}/report.py {{.CLI_ARGS}}
+
+  quick:
+    desc: Fast sanity sweep (single policy size, one round)
+    cmds:
+      - uv run --no-project --script {{.TASKFILE_DIR}}/report.py --quick
+
+  lint:
+    desc: Run linters for the benchmark scripts
+    cmds:
+      - uv run ruff check --fix {{.TASKFILE_DIR}}

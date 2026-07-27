@@ -37,7 +37,6 @@ select = [
     "EM",
     "DTZ",
     "RUF",
-    "TCH",
     "ARG",
     "DOC",
     "D"
@@ -47,6 +46,12 @@ select = [
 "tests/**" = [
     "ANN", "D", "PLR2004", "ARG001", "E501",
     "S105", "B008", "ASYNC240",
+]
+"benchmarks/**" = [
+    "T20",
+    "PLR0913",
+    "ARG001",
+    "D401",
 ]
 "packages/**/tests/**" = [
     "ANN", "D", "PLR2004", "ARG001", "E501",
