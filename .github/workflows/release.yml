@@ -28,7 +28,7 @@ jobs:
         with:
           enable-cache: true
 
-      - uses: arduino/setup-task@v2
+      - uses: arduino/setup-task@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
