@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-08-20
+### Features
+
+- feat: add AnyOf combinator for OR permission checks by @Neko1313 in [#37](https://github.com/Neko1313/casbin-fastapi-decorator/pull/37)
+
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v1.2.3...v1.3.0
 ## [1.2.3] - 2026-07-27
 ### Bug Fixes
 
