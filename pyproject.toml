@@ -94,6 +94,7 @@ markers = [
     "unit: unit tests (no real I/O)",
     "permission_guard: PermissionGuard component tests",
     "access_subject: AccessSubject component tests",
+    "any_of: AnyOf combinator component tests",
 ]
 
 [tool.bandit]

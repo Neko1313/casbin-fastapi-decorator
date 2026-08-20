@@ -11,3 +11,4 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "unit: unit tests (no real I/O)")
     config.addinivalue_line("markers", "permission_guard: PermissionGuard component tests")
     config.addinivalue_line("markers", "access_subject: AccessSubject component tests")
+    config.addinivalue_line("markers", "any_of: AnyOf combinator component tests")

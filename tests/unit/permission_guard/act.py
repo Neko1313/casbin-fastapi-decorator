@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 from fastapi import HTTPException
 
-from casbin_fastapi_decorator import AccessSubject, PermissionGuard
+from casbin_fastapi_decorator import AccessSubject, AnyOf, PermissionGuard
 
 
 async def _user_provider() -> dict[str, str]:
@@ -166,6 +166,36 @@ def test_require_permission_accepts_route_error_factory(
     )
 
     assert captured["error_factory"] is route_error_factory
+
+
+@pytest.mark.unit
+@pytest.mark.permission_guard
+def test_require_permission_any_of_returns_callable(
+    guard: PermissionGuard,
+) -> None:
+    decorator = guard.require_permission(
+        AnyOf(
+            ("domain-a", "read"),
+            ("domain-b", "read"),
+        ),
+    )
+    assert callable(decorator)
+
+
+@pytest.mark.unit
+@pytest.mark.permission_guard
+def test_require_permission_any_of_can_decorate_async_function(
+    guard: PermissionGuard,
+) -> None:
+    decorator = guard.require_permission(
+        AnyOf(("domain-a", "read"), ("domain-b", "read")),
+    )
+
+    async def route() -> dict:
+        return {"ok": True}
+
+    decorated = decorator(route)
+    assert callable(decorated)
 
 
 @pytest.mark.unit

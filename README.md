@@ -151,7 +151,7 @@ PermissionGuard(
 | Method | Description |
 |---|---|
 | `auth_required()` | Decorator: authentication only (user_provider must not raise) |
-| `require_permission(*args, error_factory=None)` | Decorator: permission check via `enforcer.enforce(user, *args)`. Optional `error_factory` overrides the guard-level factory for this route only. |
+| `require_permission(*args, error_factory=None)` | Decorator: permission check via `enforcer.enforce(user, *args)`. Optional `error_factory` overrides the guard-level factory for this route only. Pass a single `AnyOf(...)` for OR semantics across clauses — see [Combining multiple checks](#combining-multiple-checks-and--or). |
 
 ### `AccessSubject`
 
@@ -163,6 +163,34 @@ AccessSubject(
 ```
 
 Wraps a dependency whose value is resolved from the request and passed to the enforcer. By default, `selector` is identity (`lambda x: x`).
+
+### Combining multiple checks (AND / OR)
+
+**AND** — stack multiple `require_permission()` decorators on the same route. Each one must pass, in order, before the route body runs:
+
+```python
+@app.get("/gallery/vip")
+@guard.require_permission(Domain.GALLERY_EMPLOYEE, subject, Action.READ)
+@guard.require_permission(Domain.GALLERY_CRIMINAL, subject, Action.READ)
+async def route(): ...
+```
+
+**OR** — pass a single `AnyOf(...)` to `require_permission()`. Each positional argument to `AnyOf` is a clause (a tuple shaped like `require_permission`'s own `*args`). The route is allowed as soon as one clause's `enforcer.enforce()` call succeeds; remaining clauses are skipped:
+
+```python
+from casbin_fastapi_decorator import AccessSubject, AnyOf
+
+@app.get("/gallery")
+@guard.require_permission(
+    AnyOf(
+        (Domain.GALLERY_EMPLOYEE, AccessSubject(get_obj_from_role_permissions), Action.READ),
+        (Domain.GALLERY_CRIMINAL, AccessSubject(get_obj_from_role_permissions), Action.READ),
+    ),
+)
+async def route(): ...
+```
+
+On denial, `error_factory` receives `(user, clause_1_rvals, clause_2_rvals, ...)` — one resolved-values tuple per clause. `AnyOf` and stacked decorators compose: put `require_permission(AnyOf(...))` in a stack with other `require_permission(...)` calls to express `(A or B) and C`.
 
 ### Per-route error responses
 

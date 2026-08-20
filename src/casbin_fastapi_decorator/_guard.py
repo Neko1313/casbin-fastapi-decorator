@@ -57,6 +57,13 @@ class PermissionGuard:
         their selector. Other values are passed as-is.
         ``error_factory`` overrides the guard-level factory
         for this decorator only.
+
+        Passing a single ``AnyOf(...)`` instance switches to
+        OR semantics: the route is allowed if at least one of
+        its clauses passes ``enforce()``. AND semantics across
+        distinct checks come from stacking multiple
+        ``require_permission()`` decorators on the same route —
+        each one must pass, in order.
         """
         if error_factory is None:
             error_factory = self._error_factory
