@@ -66,7 +66,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: packages/casbin-fastapi-decorator-db/reports/coverage.xml
           flags: db
-          fail_ci_if_error: true
+          fail_ci_if_error: ${{ github.event.pull_request.head.repo.fork != true }}
 
       - name: Upload test analytics to Codecov
         if: always()
@@ -76,7 +76,7 @@ jobs:
           files: packages/casbin-fastapi-decorator-db/reports/junit.xml
           flags: db
           report_type: test_results
-          fail_ci_if_error: true
+          fail_ci_if_error: ${{ github.event.pull_request.head.repo.fork != true }}
 
       - name: Upload test results
         if: always()

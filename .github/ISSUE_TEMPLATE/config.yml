@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://neko1313.github.io/casbin-fastapi-decorator-docs/
+    about: Guides and API reference — check here before opening an issue.
+  - name: Report a security vulnerability
+    url: https://github.com/Neko1313/casbin-fastapi-decorator/security/advisories/new
+    about: Please report security issues privately, not as a public issue.

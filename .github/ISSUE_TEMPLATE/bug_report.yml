@@ -1,0 +1,72 @@
+name: Bug report
+description: Something does not work as documented
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+        Please search [existing issues](https://github.com/Neko1313/casbin-fastapi-decorator/issues?q=is%3Aissue) first.
+
+        **Security problems** (authorization bypass, policy leaks, etc.) must not be reported here — see our [security policy](https://github.com/Neko1313/casbin-fastapi-decorator/security/policy).
+  - type: dropdown
+    id: package
+    attributes:
+      label: Affected package
+      options:
+        - casbin-fastapi-decorator (core)
+        - casbin-fastapi-decorator-file
+        - casbin-fastapi-decorator-jwt
+        - casbin-fastapi-decorator-db
+        - casbin-fastapi-decorator-casdoor
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproducible example
+      description: The smallest FastAPI app (plus model/policy if relevant) that shows the problem.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Traceback / logs
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: "1.3.0"
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "3.12"
+    validations:
+      required: true
+  - type: input
+    id: deps-version
+    attributes:
+      label: FastAPI / casbin versions
+      placeholder: "fastapi 0.115.0, casbin 1.36.0"
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and did not find a duplicate
+          required: true
+        - label: I am willing to help fix this (optional)

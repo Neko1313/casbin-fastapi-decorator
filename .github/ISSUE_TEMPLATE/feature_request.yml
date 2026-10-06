@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest an idea or an improvement
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion! Please search [existing issues](https://github.com/Neko1313/casbin-fastapi-decorator/issues?q=is%3Aissue) first.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Related package
+      options:
+        - casbin-fastapi-decorator (core)
+        - casbin-fastapi-decorator-file
+        - casbin-fastapi-decorator-jwt
+        - casbin-fastapi-decorator-db
+        - casbin-fastapi-decorator-casdoor
+        - New package / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what is hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the API you would like to see. A short code sketch helps a lot.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to open a pull request for this

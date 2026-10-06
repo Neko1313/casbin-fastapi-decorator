@@ -348,6 +348,10 @@ task casdoor:lint      task casdoor:test
 task file:lint         task file:test
 ```
 
+## Contributing
+
+Issues and pull requests from everyone are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, and [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
+
 ## License
 
 MIT
