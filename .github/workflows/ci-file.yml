@@ -1,11 +1,11 @@
-name: "CI: JWT"
+name: "CI: File"
 
 on:
   pull_request:
     branches: ["*"]
     paths:
-      - "packages/casbin-fastapi-decorator-jwt/**"
-      - ".github/workflows/ci-jwt.yml"
+      - "packages/casbin-fastapi-decorator-file/**"
+      - ".github/workflows/ci-file.yml"
       - "pyproject.toml"
   push:
     branches: [main]
@@ -34,7 +34,7 @@ jobs:
         run: task install
 
       - name: Lint
-        run: task jwt:lint CI=true
+        run: task file:lint CI=true
 
   test:
     runs-on: ubuntu-latest
@@ -56,14 +56,14 @@ jobs:
         run: task install
 
       - name: Test
-        run: task jwt:test CI=true
+        run: task file:test CI=true
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: packages/casbin-fastapi-decorator-jwt/reports/coverage.xml
-          flags: jwt
+          files: packages/casbin-fastapi-decorator-file/reports/coverage.xml
+          flags: file
           fail_ci_if_error: ${{ github.event.pull_request.head.repo.fork != true }}
 
       - name: Upload test analytics to Codecov
@@ -71,8 +71,8 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: packages/casbin-fastapi-decorator-jwt/reports/junit.xml
-          flags: jwt
+          files: packages/casbin-fastapi-decorator-file/reports/junit.xml
+          flags: file
           report_type: test_results
           fail_ci_if_error: ${{ github.event.pull_request.head.repo.fork != true }}
 
@@ -80,5 +80,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: jwt-test-results
-          path: packages/casbin-fastapi-decorator-jwt/reports/
+          name: file-test-results
+          path: packages/casbin-fastapi-decorator-file/reports/

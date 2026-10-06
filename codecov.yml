@@ -35,4 +35,7 @@ flag_management:
     - name: casdoor
       paths:
         - packages/casbin-fastapi-decorator-casdoor/src/
+    - name: file
+      paths:
+        - packages/casbin-fastapi-decorator-file/src/
 

@@ -9,7 +9,7 @@
   [![Python](https://img.shields.io/pypi/pyversions/casbin-fastapi-decorator)](https://pypi.org/project/casbin-fastapi-decorator/)
   [![PyPI Downloads](https://static.pepy.tech/personalized-badge/casbin-fastapi-decorator?period=total&units=INTERNATIONAL_SYSTEM&left_color=lightgrey&right_color=blue&left_text=downloads)](https://pepy.tech/projects/casbin-fastapi-decorator)
   [![License](https://img.shields.io/github/license/Neko1313/casbin-fastapi-decorator)](LICENSE)
-  [![CI](https://img.shields.io/github/actions/workflow/status/Neko1313/casbin-fastapi-decorator/ci.yml?label=CI)](https://github.com/Neko1313/casbin-fastapi-decorator/actions)
+  [![CI](https://img.shields.io/github/actions/workflow/status/Neko1313/casbin-fastapi-decorator/ci-core.yml?label=CI)](https://github.com/Neko1313/casbin-fastapi-decorator/actions)
   [![codecov](https://codecov.io/gh/Neko1313/casbin-fastapi-decorator/graph/badge.svg?token=05ZhOXGetg)](https://codecov.io/gh/Neko1313/casbin-fastapi-decorator)
 
   [📚 Documentation](https://neko1313.github.io/casbin-fastapi-decorator-docs/) · [PyPI](https://pypi.org/project/casbin-fastapi-decorator/) · [Casbin Ecosystem](https://casbin.org/ecosystem/)
@@ -347,6 +347,10 @@ task db:lint           task db:test         # requires Docker (testcontainers)
 task casdoor:lint      task casdoor:test
 task file:lint         task file:test
 ```
+
+## Contributing
+
+Issues and pull requests from everyone are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, [SECURITY.md](SECURITY.md) for reporting vulnerabilities, and our [Code of Conduct](CODE_OF_CONDUCT.md) for community expectations.
 
 ## License
 
