@@ -39,3 +39,23 @@ updates:
     labels:
       - "dependencies"
       - "python"
+
+  # Casdoor package
+  - package-ecosystem: "pip"
+    directory: "/packages/casbin-fastapi-decorator-casdoor"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "python"
+
+  # File package
+  - package-ecosystem: "pip"
+    directory: "/packages/casbin-fastapi-decorator-file"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "python"

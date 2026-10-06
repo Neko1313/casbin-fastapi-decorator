@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in `casbin-fastapi-decorator`! Everyone is welcome to open issues and send pull requests — no permission needed.
+Thanks for your interest in `casbin-fastapi-decorator`! Everyone is welcome to open issues and send pull requests — no permission needed. By participating you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Ways to contribute
 
