@@ -2,7 +2,7 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #   "casbin-fastapi-decorator",
-#   "fastapi==0.140.2",
+#   "fastapi==0.142.2",
 #   "casbin==1.43.0",
 # ]
 #
