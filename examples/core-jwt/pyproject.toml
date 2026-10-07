@@ -5,11 +5,11 @@ description = "Casbin Fastapi Decorator JWT Example"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "fastapi[standard]>=0.128.6",
+    "fastapi[standard]>=0.142.2",
     "casbin-fastapi-decorator",
     "casbin-fastapi-decorator-jwt",
     "casbin-fastapi-decorator-file",
-    "pyjwt>=2.0.0",
+    "pyjwt>=2.12.1",
 ]
 
 [tool.uv.sources]

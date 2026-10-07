@@ -2,7 +2,7 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #   "fastapi-authz==1.0.0",
-#   "fastapi==0.140.2",
+#   "fastapi==0.142.2",
 #   "casbin==1.43.0",
 # ]
 # ///

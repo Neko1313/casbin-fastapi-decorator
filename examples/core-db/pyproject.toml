@@ -5,10 +5,10 @@ description = "Casbin Fastapi Decorator DB Example"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "fastapi[standard]>=0.128.6",
+    "fastapi[standard]>=0.142.2",
     "casbin-fastapi-decorator",
     "casbin-fastapi-decorator-db",
-    "aiosqlite>=0.20.0",
+    "aiosqlite>=0.22.1",
 ]
 
 [tool.uv.sources]
