@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2026-10-07
+### Bug Fixes
+
+- **deps**: chore(deps): update dependencies to latest versions by @Neko1313 in [#41](https://github.com/Neko1313/casbin-fastapi-decorator/pull/41)
+
+### Miscellaneous
+
+- chore: add community health files and make CI fork-friendly by @Neko1313 in [#38](https://github.com/Neko1313/casbin-fastapi-decorator/pull/38)
+
+
+
+
+**Full Changelog**: https://github.com/Neko1313/casbin-fastapi-decorator/compare/v1.3.0...v1.3.1
 ## [1.3.0] - 2026-08-20
 ### Features
 

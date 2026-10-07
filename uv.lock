@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -354,7 +354,7 @@ wheels = [
 
 [[package]]
 name = "casbin-fastapi-decorator"
-version = "1.3.0"
+version = "1.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "casbin" },
@@ -416,7 +416,7 @@ test = [
 
 [[package]]
 name = "casbin-fastapi-decorator-casdoor"
-version = "1.3.0"
+version = "1.3.1"
 source = { editable = "packages/casbin-fastapi-decorator-casdoor" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },
@@ -449,7 +449,7 @@ test = [
 
 [[package]]
 name = "casbin-fastapi-decorator-db"
-version = "1.3.0"
+version = "1.3.1"
 source = { editable = "packages/casbin-fastapi-decorator-db" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },
@@ -491,7 +491,7 @@ test = [
 
 [[package]]
 name = "casbin-fastapi-decorator-file"
-version = "1.3.0"
+version = "1.3.1"
 source = { editable = "packages/casbin-fastapi-decorator-file" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },
@@ -522,7 +522,7 @@ test = [
 
 [[package]]
 name = "casbin-fastapi-decorator-jwt"
-version = "1.3.0"
+version = "1.3.1"
 source = { editable = "packages/casbin-fastapi-decorator-jwt" }
 dependencies = [
     { name = "casbin-fastapi-decorator" },
